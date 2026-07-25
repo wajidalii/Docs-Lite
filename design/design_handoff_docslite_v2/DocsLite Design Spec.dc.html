@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=Source+Serif+4:opsz,wght@8..60,400..600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #10131a; --text: #2a3038; --muted: #6e7681; --faint: #98a0ab;
+      --line: #e4e7eb; --line-soft: #eef0f3; --bg: #f7f8fa; --surface: #ffffff;
+      --accent: #5b5bd6; --accent-hover: #4a4ac2; --accent-tint: #f0f0fe; --accent-line: #d5d5f7;
+      --success: #167c4e; --danger: #c0362c; --danger-tint: #fdf2f1;
+      --r-sm: 6px; --r-md: 8px; --r-lg: 12px;
+      --sh-sm: 0 1px 2px rgba(16,19,26,.05), 0 1px 1px rgba(16,19,26,.04);
+      --sh-md: 0 4px 14px rgba(16,19,26,.07), 0 1px 2px rgba(16,19,26,.05);
+      --sh-lg: 0 24px 60px rgba(16,19,26,.18), 0 2px 8px rgba(16,19,26,.08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: "Instrument Sans", system-ui, sans-serif; font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-hover); text-decoration: underline; }
+    ::selection { background: #dededf; }
+    code, pre { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+    pre { margin: 0; white-space: pre; overflow-x: auto; font-size: 12.5px; line-height: 1.7; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: 10.5px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--faint); padding: 0 14px 10px 0; border-bottom: 1px solid var(--line); }
+    td { padding: 11px 14px 11px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: top; }
+    td code { font-size: 12px; color: var(--ink); }
+    h2 { margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.02em; color: var(--ink); }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--sh-sm); }
+  </style>
+</helmet>
+
+<div style="max-width:1120px; margin:0 auto; padding:64px 40px 120px">
+
+  <header style="padding-bottom:28px; border-bottom:1px solid var(--line); margin-bottom:56px">
+    <div style="font-size:11px; font-weight:600; letter-spacing:0.09em; text-transform:uppercase; color:var(--faint); margin-bottom:14px">Handoff spec · DocsLite v2</div>
+    <h1 style="margin:0 0 10px; font-family:'Instrument Serif', Georgia, serif; font-weight:400; font-size:46px; line-height:1.05; letter-spacing:-0.015em; color:var(--ink)">Tokens, components, behaviour</h1>
+    <p style="margin:0; font-size:15px; color:var(--muted); max-width:66ch">Every value used by <strong style="font-weight:600; color:var(--ink)">DocsLite Prototype 2</strong>, in the form the stack wants it: Tailwind v4 CSS-first <code>@theme</code>, Lucide icons, Tiptap for the canvas, sonner for toasts, <code>next/font</code> for the three typefaces. Light mode is primary.</p>
+  </header>
+
+  <section style="margin-bottom:56px">
+    <h2 style="margin-bottom:16px">01 · Tailwind v4 theme — copy this</h2>
+    <div class="card" style="padding:24px 26px; background:#10131a; border-color:#10131a; color:#c9ced6; overflow:hidden"><pre>@import "tailwindcss";
+
+@theme {
+  /* surfaces &amp; ink */
+  --color-bg:            #f7f8fa;   /* app background        */
+  --color-surface:       #ffffff;   /* cards, sheet, sidebar */
+  --color-ink:           #10131a;   /* headings, strong text */
+  --color-body:          #2a3038;   /* body copy             */
+  --color-muted:         #6e7681;   /* secondary text        */
+  --color-faint:         #98a0ab;   /* meta, placeholders    */
+  --color-line:          #e4e7eb;   /* 1px borders           */
+  --color-line-soft:     #eef0f3;   /* row dividers          */
+
+  /* brand */
+  --color-accent:        #5b5bd6;
+  --color-accent-hover:  #4a4ac2;
+  --color-accent-press:  #4141ad;
+  --color-accent-tint:   #f0f0fe;   /* active row / toggle   */
+  --color-accent-line:   #d5d5f7;
+
+  /* status */
+  --color-success:       #167c4e;
+  --color-danger:        #c0362c;
+  --color-danger-tint:   #fdf2f1;
+
+  /* type */
+  --font-sans:   "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif:  "Source Serif 4", Georgia, serif;   /* document canvas */
+  --font-display:"Instrument Serif", Georgia, serif; /* hero moments    */
+
+  /* radius */
+  --radius-sm: 6px;    /* toolbar toggles, inline inputs */
+  --radius-md: 8px;    /* buttons, fields, rows          */
+  --radius-lg: 12px;   /* cards, sheet, avatars-64       */
+  --radius-xl: 14px;   /* dialog                         */
+
+  /* elevation */
+  --shadow-sm: 0 1px 2px rgb(16 19 26 / .05), 0 1px 1px rgb(16 19 26 / .04);
+  --shadow-md: 0 4px 14px rgb(16 19 26 / .07), 0 1px 2px rgb(16 19 26 / .05);
+  --shadow-lg: 0 24px 60px rgb(16 19 26 / .18), 0 2px 8px rgb(16 19 26 / .08);
+
+  /* motion */
+  --ease-out-quint: cubic-bezier(.32,.72,0,1);
+}</pre></div>
+    <p style="margin:14px 0 0; font-size:12.5px; color:var(--faint)">Spacing uses Tailwind's default 4px scale untouched. The only custom easing is <code>--ease-out-quint</code>, used for the dialog, the toast and the mobile drawer.</p>
+  </section>
+
+  <section style="margin-bottom:56px">
+    <h2 style="margin-bottom:16px">02 · Colour roles</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(168px, 1fr)); gap:12px">
+      <sc-for list="{{ swatches }}" as="sw" hint-placeholder-count="12">
+        <div class="card" style="overflow:hidden">
+          <div style="height:56px; background:{{ sw.hex }}; border-bottom:1px solid var(--line-soft)"></div>
+          <div style="padding:12px 13px">
+            <div style="font-size:12.5px; font-weight:600; color:var(--ink)">{{ sw.name }}</div>
+            <div style="font-size:11.5px; font-family:ui-monospace, monospace; color:var(--muted); margin:2px 0 4px">{{ sw.hex }}</div>
+            <div style="font-size:11.5px; color:var(--faint); line-height:1.5">{{ sw.use }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="margin-bottom:56px">
+    <h2 style="margin-bottom:16px">03 · Type scale</h2>
+    <div class="card" style="padding:8px 26px 4px">
+      <table>
+        <thead><tr><th style="width:26%">Role</th><th style="width:30%">Family / weight</th><th style="width:20%">Size / line-height</th><th>Tracking &amp; notes</th></tr></thead>
+        <tbody>
+          <sc-for list="{{ typeRows }}" as="tr" hint-placeholder-count="9">
+            <tr><td style="font-weight:600; color:var(--ink)">{{ tr.role }}</td><td><code>{{ tr.family }}</code></td><td><code>{{ tr.size }}</code></td><td style="color:var(--muted)">{{ tr.notes }}</td></tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="margin-top:16px; padding:34px 36px">
+      <div style="font-family:'Source Serif 4', Georgia, serif; font-size:34px; font-weight:600; line-height:1.2; letter-spacing:-0.015em; color:var(--ink); margin-bottom:14px">The writing surface is a serif</div>
+      <p style="margin:0 0 16px; font-family:'Source Serif 4', Georgia, serif; font-size:18px; line-height:1.78; color:#23282f; max-width:62ch">Chrome is Instrument Sans; the document itself is Source Serif 4 at 18px/1.78 on a 760px measure. This is the single decision that makes DocsLite feel like a document rather than another app screen — <strong style="font-weight:600; color:var(--ink)">keep it</strong> when you build the Tiptap surface.</p>
+      <div style="font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:var(--muted)">H3 in the canvas is a sans eyebrow, not a serif heading</div>
+    </div>
+  </section>
+
+  <section style="margin-bottom:56px">
+    <h2 style="margin-bottom:16px">04 · Components &amp; states</h2>
+
+    <div class="card" style="padding:26px; margin-bottom:14px">
+      <div style="font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--faint); margin-bottom:18px">Buttons · height 40 (38 in sidebar, 34 in the editor header)</div>
+      <div style="display:flex; gap:26px; flex-wrap:wrap; align-items:flex-end">
+        <div style="display:flex; flex-direction:column; gap:9px">
+          <button type="button" style="display:flex; align-items:center; gap:7px; height:40px; padding:0 16px; font-size:13.5px; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:var(--r-md); cursor:pointer; box-shadow:0 1px 2px rgba(91,91,214,.35)">Primary</button>
+          <button type="button" style="height:40px; padding:0 16px; font-size:13.5px; font-weight:600; color:#fff; background:var(--accent-hover); border:0; border-radius:var(--r-md); cursor:pointer">Hover</button>
+          <button type="button" style="height:40px; padding:0 16px; font-size:13.5px; font-weight:600; color:#fff; background:#4141ad; border:0; border-radius:var(--r-md); cursor:pointer">Pressed</button>
+          <button type="button" style="height:40px; padding:0 16px; font-size:13.5px; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:var(--r-md); outline:2px solid var(--accent); outline-offset:2px">Focus-visible</button>
+          <button type="button" disabled style="height:40px; padding:0 16px; font-size:13.5px; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:var(--r-md); opacity:.45; cursor:not-allowed">Disabled</button>
+          <span style="font-size:11px; color:var(--faint)">Primary · one per context</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:9px">
+          <button type="button" style="height:40px; padding:0 16px; font-size:13.5px; font-weight:500; color:var(--text); background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); cursor:pointer">Secondary</button>
+          <button type="button" style="height:40px; padding:0 16px; font-size:13.5px; font-weight:500; color:var(--text); background:#fafbfc; border:1px solid #d6dae0; border-radius:var(--r-md); cursor:pointer">Hover</button>
+          <button type="button" style="height:40px; padding:0 16px; font-size:13.5px; font-weight:500; color:var(--text); background:#f4f5f7; border:1px solid #cfd4da; border-radius:var(--r-md); cursor:pointer">Pressed</button>
+          <button type="button" style="display:flex; align-items:center; gap:8px; height:40px; padding:0 16px; font-size:13.5px; font-weight:500; color:var(--muted); background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md)"><span style="width:14px; height:14px; border:2px solid var(--line); border-top-color:var(--muted); border-radius:50%; display:block"></span>Loading</button>
+          <span style="font-size:11px; color:var(--faint)">Secondary · upload, cancel</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:9px">
+          <button type="button" style="height:34px; width:34px; display:grid; place-items:center; color:var(--muted); background:transparent; border:0; border-radius:var(--r-md); cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+          <button type="button" style="height:34px; width:34px; display:grid; place-items:center; color:var(--ink); background:#f4f5f7; border:0; border-radius:var(--r-md); cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+          <button type="button" style="height:34px; width:34px; display:grid; place-items:center; color:var(--danger); background:var(--danger-tint); border:0; border-radius:var(--r-md); cursor:pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+          <span style="font-size:11px; color:var(--faint)">Icon 34² · ghost, ghost-hover,<br>destructive-hover · 44² on touch</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:9px">
+          <div style="display:flex; gap:2px; padding:8px 10px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md)">
+            <span style="min-width:32px; height:32px; padding:0 9px; display:inline-flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:var(--muted); border-radius:var(--r-sm)">H1</span>
+            <span style="min-width:32px; height:32px; padding:0 9px; display:inline-flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:var(--ink); background:#f4f5f7; border-radius:var(--r-sm)">H2</span>
+            <span style="min-width:32px; height:32px; padding:0 9px; display:inline-flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:var(--accent); background:var(--accent-tint); border-radius:var(--r-sm)">P</span>
+          </div>
+          <span style="font-size:11px; color:var(--faint)">Toolbar toggle · rest / hover / active.<br>Active = tint fill + accent text, never a fill.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:14px; margin-bottom:14px">
+      <div class="card" style="padding:26px">
+        <div style="font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--faint); margin-bottom:18px">Fields · height 40</div>
+        <div style="display:flex; flex-direction:column; gap:12px">
+          <input placeholder="Rest — teammate's email" style="height:40px; padding:9px 12px; font-size:14px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md)">
+          <input value="focus@docslite.app" style="height:40px; padding:9px 12px; font-size:14px; background:var(--surface); border:1px solid var(--accent); border-radius:var(--r-md); box-shadow:0 0 0 3px rgba(91,91,214,.14)">
+          <input value="not-an-email" style="height:40px; padding:9px 12px; font-size:14px; background:var(--surface); border:1px solid #e3a49e; border-radius:var(--r-md)">
+          <div style="display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--danger)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>That doesn't look like an email address.</div>
+          <select style="height:40px; min-width:124px; align-self:flex-start; padding:0 8px 0 12px; font-size:13.5px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md)"><option>Can edit</option><option>Can view</option></select>
+          <div style="font-size:11.5px; color:var(--faint)">Focus ring: 1px accent border + 3px rgba(91,91,214,.14). Error border #E3A49E, message in <code>--danger</code> with an icon — never colour alone.</div>
+        </div>
+      </div>
+      <div class="card" style="padding:26px">
+        <div style="font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--faint); margin-bottom:18px">Badges, avatars, save status</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px">
+          <span style="display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:500; color:#4646b8; background:#f0f0fe">Owner</span>
+          <span style="display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:500; color:#4a5260; background:#f1f3f5">Can edit</span>
+          <span style="display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:500; color:var(--muted); background:transparent; border:1px solid var(--line)">View only</span>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:18px">
+          <span style="width:30px; height:30px; border-radius:9px; display:grid; place-items:center; font-size:11.5px; font-weight:600; color:#fff; background:#4f4fc9">AR</span>
+          <span style="width:36px; height:36px; border-radius:10px; display:grid; place-items:center; font-size:12.5px; font-weight:600; color:#fff; background:#0f766e">BO</span>
+          <span style="width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-size:14px; font-weight:600; color:#fff; background:#b45309">ML</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:9px; font-size:12.5px">
+          <span style="display:inline-flex; align-items:center; gap:7px; color:var(--muted)"><span style="width:12px; height:12px; border:2px solid var(--line); border-top-color:var(--muted); border-radius:50%; display:block"></span>Saving…</span>
+          <span style="display:inline-flex; align-items:center; gap:6px; color:var(--muted)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Saved</span>
+          <span style="display:inline-flex; align-items:center; gap:6px; font-weight:500; color:var(--danger)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>Save failed — keep typing to retry</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:14px">
+      <div class="card" style="padding:26px">
+        <div style="font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--faint); margin-bottom:18px">List rows</div>
+        <div style="border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden; margin-bottom:14px">
+          <div style="display:flex; align-items:center; gap:14px; min-height:62px; padding:12px 18px; border-bottom:1px solid var(--line-soft)">
+            <span style="width:34px; height:34px; flex:none; border-radius:9px; display:grid; place-items:center; background:#f4f5f7; color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v5h6"></path></svg></span>
+            <span style="display:flex; flex-direction:column; gap:2px; flex:1; min-width:0"><span style="font-size:14px; font-weight:600; color:var(--ink)">Rest</span><span style="font-size:12.5px; color:var(--muted)">You · 12 minutes ago</span></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b6bcc5" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+          </div>
+          <div style="display:flex; align-items:center; gap:14px; min-height:62px; padding:12px 18px; background:#fafbfc">
+            <span style="width:34px; height:34px; flex:none; border-radius:9px; display:grid; place-items:center; background:#eef0f3; color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v5h6"></path></svg></span>
+            <span style="display:flex; flex-direction:column; gap:2px; flex:1; min-width:0"><span style="font-size:14px; font-weight:600; color:var(--ink)">Hover · #FAFBFC</span><span style="font-size:12.5px; color:var(--muted)">Mira · 5 hours ago</span></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b6bcc5" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:9px; min-height:38px; padding:7px 9px; border-radius:var(--r-md); background:var(--accent-tint); color:var(--accent)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="opacity:.6"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v5h6"></path></svg>
+          <span style="display:flex; flex-direction:column"><span style="font-size:13.5px; font-weight:500">Sidebar row · selected</span><span style="font-size:11.5px; color:#8484d8">tint fill, accent text</span></span>
+        </div>
+      </div>
+      <div class="card" style="padding:26px">
+        <div style="font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--faint); margin-bottom:18px">Toasts · sonner, bottom-centre</div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px">
+          <div style="display:flex; align-items:center; gap:10px; padding:11px 10px 11px 14px; background:#14181f; color:#f4f5f7; border-radius:10px; box-shadow:var(--sh-md); font-size:13px">
+            <span style="width:7px; height:7px; border-radius:50%; background:#4ade9b; flex:none"></span><span style="flex:1">Ben Okafor can now edit this document.</span>
+            <span style="width:26px; height:26px; display:grid; place-items:center; color:#9aa2ad"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; padding:11px 10px 11px 14px; background:#14181f; color:#f4f5f7; border-radius:10px; box-shadow:var(--sh-md); font-size:13px">
+            <span style="width:7px; height:7px; border-radius:50%; background:#ff8079; flex:none"></span><span style="flex:1">Only .txt and .md files can be uploaded.</span>
+            <span style="width:26px; height:26px; display:grid; place-items:center; color:#9aa2ad"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></span>
+          </div>
+        </div>
+        <div style="font-size:11.5px; color:var(--faint); line-height:1.7">Dark chip on both variants — the 7px dot carries the state (#4ADE9B success, #FF8079 error). Max width 420px, 4.2s auto-dismiss, always dismissible. Enter: 180ms <code>--ease-out-quint</code>, translateY(12px) + scale(.98) → none.</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin-bottom:56px">
+    <h2 style="margin-bottom:16px">05 · Motion &amp; interaction</h2>
+    <div class="card" style="padding:8px 26px 4px">
+      <table>
+        <thead><tr><th style="width:26%">Moment</th><th style="width:24%">Property</th><th style="width:20%">Duration / easing</th><th>Notes</th></tr></thead>
+        <tbody>
+          <sc-for list="{{ motionRows }}" as="mr" hint-placeholder-count="8">
+            <tr><td style="font-weight:600; color:var(--ink)">{{ mr.moment }}</td><td><code>{{ mr.prop }}</code></td><td><code>{{ mr.timing }}</code></td><td style="color:var(--muted)">{{ mr.notes }}</td></tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section style="margin-bottom:56px">
+    <h2 style="margin-bottom:16px">06 · Responsive rules</h2>
+    <div class="card" style="padding:8px 26px 4px">
+      <table>
+        <thead><tr><th style="width:20%">Region</th><th style="width:27%">Desktop ≥ 1024</th><th style="width:26%">Tablet 640–1023</th><th>Mobile &lt; 640</th></tr></thead>
+        <tbody>
+          <sc-for list="{{ respRows }}" as="rp" hint-placeholder-count="7">
+            <tr><td style="font-weight:600; color:var(--ink)">{{ rp.region }}</td><td>{{ rp.desktop }}</td><td>{{ rp.tablet }}</td><td>{{ rp.mobile }}</td></tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin:14px 0 0; font-size:12.5px; color:var(--faint)">The prototype drives these with <code>@container app (max-width: …)</code> so the frame can be resized in place; in the real app use ordinary <code>@media</code> / Tailwind <code>sm:</code> <code>lg:</code> breakpoints. No horizontal page scroll at any width; the formatting toolbar is the one element allowed to scroll horizontally.</p>
+  </section>
+
+  <section>
+    <h2 style="margin-bottom:16px">07 · Accessibility &amp; keyboard</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:14px">
+      <div class="card" style="padding:24px 26px">
+        <div style="font-size:12px; font-weight:600; color:var(--ink); margin-bottom:10px">Contrast (WCAG 2.1 AA)</div>
+        <div style="font-size:12.5px; color:var(--muted); line-height:1.8">Body <code>#2A3038</code> on <code>#FFFFFF</code> — 12.6:1 · muted <code>#6E7681</code> — 4.8:1 · faint <code>#98A0AB</code> is meta-only at ≥ 12px, never body copy · white on <code>--accent</code> — 5.3:1 · <code>--danger</code> on white — 5.1:1 · every avatar fill ≥ 4.5:1.</div>
+      </div>
+      <div class="card" style="padding:24px 26px">
+        <div style="font-size:12px; font-weight:600; color:var(--ink); margin-bottom:10px">Keyboard</div>
+        <div style="font-size:12.5px; color:var(--muted); line-height:1.8"><code>Tab</code> through header → toolbar → canvas → sheet. Toolbar buttons are <code>aria-pressed</code> toggles. Dialog traps focus, <code>Esc</code> closes, <code>Enter</code> in the email field submits the share. Drawer returns focus to the hamburger on close. All icon-only buttons carry <code>aria-label</code> + a title tooltip.</div>
+      </div>
+      <div class="card" style="padding:24px 26px">
+        <div style="font-size:12px; font-weight:600; color:var(--ink); margin-bottom:10px">Not colour alone</div>
+        <div style="font-size:12.5px; color:var(--muted); line-height:1.8">Role badges pair tint with text. Save status pairs colour with an icon and a word. Toast state is a dot <em>and</em> the copy. Reduced motion collapses every duration to 0.01ms. Touch targets ≥ 44×44 below 640px.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      swatches: [
+        { name: 'bg', hex: '#f7f8fa', use: 'App background, workspace' },
+        { name: 'surface', hex: '#ffffff', use: 'Sidebar, cards, sheet, dialog' },
+        { name: 'ink', hex: '#10131a', use: 'Headings, titles, strong' },
+        { name: 'body', hex: '#2a3038', use: 'Default text' },
+        { name: 'muted', hex: '#6e7681', use: 'Secondary text, icons' },
+        { name: 'faint', hex: '#98a0ab', use: 'Meta, placeholders, chevrons' },
+        { name: 'line', hex: '#e4e7eb', use: '1px borders, dividers' },
+        { name: 'line-soft', hex: '#eef0f3', use: 'Row dividers, skeletons' },
+        { name: 'accent', hex: '#5b5bd6', use: 'Primary action, active state' },
+        { name: 'accent-tint', hex: '#f0f0fe', use: 'Selected row, toggle on' },
+        { name: 'success', hex: '#167c4e', use: 'Saved check only' },
+        { name: 'danger', hex: '#c0362c', use: 'Destructive, validation' }
+      ],
+      typeRows: [
+        { role: 'Display', family: 'Instrument Serif 400', size: '46 / 1.05', notes: 'Login headline, empty state, 404. Tracking −0.015em. One per screen.' },
+        { role: 'Page title', family: 'Instrument Sans 600', size: '21 / 1.3', notes: '“Documents”. Tracking −0.02em.' },
+        { role: 'Dialog title', family: 'Instrument Sans 600', size: '16.5 / 1.35', notes: 'Tracking −0.01em.' },
+        { role: 'Doc title (chrome)', family: 'Instrument Sans 600', size: '15 / 1.35', notes: 'Editable input, invisible until hover.' },
+        { role: 'Body / UI', family: 'Instrument Sans 400', size: '14 / 1.5', notes: 'Base size. Rows use 14 title + 12.5 meta.' },
+        { role: 'Small', family: 'Instrument Sans 400–500', size: '12.5 / 1.5', notes: 'Meta, hints, validation.' },
+        { role: 'Eyebrow', family: 'Instrument Sans 600', size: '10.5 / 1.4', notes: 'Uppercase, tracking 0.07em, colour faint.' },
+        { role: 'Canvas body', family: 'Source Serif 4 400', size: '18 / 1.78', notes: '760px measure, colour #23282F. 17px below 640.' },
+        { role: 'Canvas H1 / H2', family: 'Source Serif 4 600', size: '34 / 1.2 · 25 / 1.3', notes: 'H3 switches to sans uppercase 15px, colour muted.' }
+      ],
+      motionRows: [
+        { moment: 'Button / row hover', prop: 'background, border-color', timing: '140ms ease', notes: 'Rows 120ms — lists should feel quicker than controls.' },
+        { moment: 'Focus ring', prop: 'box-shadow, border-color', timing: '140ms ease', notes: '1px accent border + 3px rgba(91,91,214,.14).' },
+        { moment: 'Dialog open', prop: 'opacity, translateY(8px), scale(.985)', timing: '140ms --ease-out-quint', notes: 'Backdrop rgba(16,19,26,.36) + 2px blur, no separate animation.' },
+        { moment: 'Toast in', prop: 'opacity, translateY(12px), scale(.98)', timing: '180ms --ease-out-quint', notes: 'Stack grows upward, gap 8px, 4.2s dismiss.' },
+        { moment: 'Mobile drawer', prop: 'transform translateX(−102%) → 0', timing: '200ms --ease-out-quint', notes: 'Scrim fades with it; tap scrim or Esc to close.' },
+        { moment: 'Spinner', prop: 'rotate 360°', timing: '700ms linear infinite', notes: '2px ring, accent-line track + accent head.' },
+        { moment: 'Save status', prop: 'none', timing: 'debounce 750ms', notes: 'Saving… appears on first keystroke, Saved 750ms after the last. Never animate the swap.' },
+        { moment: 'Reduced motion', prop: 'all', timing: '0.01ms', notes: 'Honour prefers-reduced-motion; state changes stay instant, never removed.' }
+      ],
+      respRows: [
+        { region: 'Sidebar', desktop: '264px, always visible', tablet: '232px', mobile: 'Off-canvas drawer 288px + scrim; hamburger in a 56px top app bar' },
+        { region: 'Workspace', desktop: 'padding 34/36, list max 880px', tablet: 'padding 28/24', mobile: 'padding 20/16, full width' },
+        { region: 'Editor header', desktop: '57px, title + badge + Share + delete', tablet: 'same', mobile: 'padding 10/12, title truncates, badge stays' },
+        { region: 'Toolbar', desktop: '49px, all groups visible', tablet: 'same', mobile: 'Horizontal scroll, 44² targets, save status scrolls with it' },
+        { region: 'Sheet', desktop: '760px, radius 12, border + shadow-sm, padding 64/72', tablet: 'padding 48/44', mobile: 'Full-bleed, no radius/border/shadow, padding 28/22' },
+        { region: 'Share dialog', desktop: 'Centred, 540px, radius 14', tablet: 'same', mobile: 'Bottom sheet, full width, radius 16 top only, max-height 94%' },
+        { region: 'Document rows', desktop: '62px, role pill + chevron', tablet: 'same', mobile: '≥ 52px, role pill hidden (role shown in the sidebar meta line)' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

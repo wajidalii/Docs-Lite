@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #10131a; --text: #2a3038; --muted: #6e7681; --faint: #98a0ab;
+      --line: #e4e7eb; --line-soft: #eef0f3; --bg: #f7f8fa; --surface: #ffffff;
+      --accent: #5b5bd6; --accent-hover: #4a4ac2; --accent-tint: #f0f0fe; --accent-line: #d5d5f7;
+      --success: #167c4e; --danger: #c0362c; --danger-tint: #fdf2f1;
+      --r-sm: 6px; --r-md: 8px; --r-lg: 12px;
+      --sh-sm: 0 1px 2px rgba(16,19,26,.05), 0 1px 1px rgba(16,19,26,.04);
+      --sh-md: 0 4px 14px rgba(16,19,26,.07), 0 1px 2px rgba(16,19,26,.05);
+      --sh-lg: 0 24px 60px rgba(16,19,26,.18), 0 2px 8px rgba(16,19,26,.08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: "Instrument Sans", system-ui, sans-serif; font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-hover); text-decoration: underline; }
+    button, input, select { font: inherit; color: inherit; }
+    ::selection { background: #dededf; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    @keyframes p2-spin { to { transform: rotate(360deg) } }
+    @keyframes p2-toast { from { opacity: 0; transform: translateY(12px) scale(.98) } to { opacity: 1; transform: none } }
+    @keyframes p2-dialog { from { opacity: 0; transform: translateY(8px) scale(.985) } to { opacity: 1; transform: none } }
+    @media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; transition-duration: .01ms !important } }
+
+    [data-canvas] { outline: none; font-family: "Source Serif 4", Georgia, serif; font-size: 18px; line-height: 1.78; color: #23282f; }
+    [data-canvas] > :first-child { margin-top: 0 !important; }
+    [data-canvas] h1 { font-family: "Source Serif 4", Georgia, serif; font-weight: 600; font-size: 34px; line-height: 1.2; letter-spacing: -0.015em; margin: 36px 0 14px; color: var(--ink); }
+    [data-canvas] h2 { font-family: "Source Serif 4", Georgia, serif; font-weight: 600; font-size: 25px; line-height: 1.3; letter-spacing: -0.01em; margin: 32px 0 10px; color: var(--ink); }
+    [data-canvas] h3 { font-family: "Instrument Sans", sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.06em; text-transform: uppercase; margin: 30px 0 8px; color: var(--muted); }
+    [data-canvas] p { margin: 0 0 20px; }
+    [data-canvas] ul, [data-canvas] ol { margin: 0 0 20px; padding-left: 26px; }
+    [data-canvas] li { margin-bottom: 8px; padding-left: 2px; }
+    [data-canvas] li::marker { color: var(--faint); }
+    [data-canvas] strong { font-weight: 600; color: var(--ink); }
+    [data-canvas] [data-empty]::before, [data-canvas][data-empty]::before { content: attr(data-placeholder); color: var(--faint); }
+
+    [data-row-active] { background: var(--accent-tint) !important; color: var(--accent) !important; }
+    [data-row-active] [data-dim] { color: #8484d8 !important; }
+    [data-tool-on] { background: var(--accent-tint) !important; color: var(--accent) !important; }
+    [data-seg-on] { background: var(--surface) !important; color: var(--ink) !important; box-shadow: var(--sh-sm); }
+    [data-toast="error"] [data-dot] { background: #ff8079 !important; }
+
+    @container app (max-width: 1023px) {
+      [data-sidebar] { width: 232px !important; }
+      [data-work] { padding: 28px 24px !important; }
+      [data-sheet] { padding: 48px 44px 72px !important; }
+    }
+    @container app (max-width: 639px) {
+      [data-mtop] { display: flex !important; }
+      [data-sidebar] { position: absolute !important; z-index: 30; top: 0; bottom: 0; left: 0; width: 288px !important;
+        transform: translateX(-102%); transition: transform 200ms cubic-bezier(.32,.72,0,1); box-shadow: var(--sh-lg); }
+      [data-sidebar][data-open] { transform: none; }
+      [data-work] { padding: 20px 16px !important; }
+      [data-sheet] { padding: 28px 22px 64px !important; border-radius: 0 !important; border-left: 0 !important; border-right: 0 !important; box-shadow: none !important; }
+      [data-canvas] { font-size: 17px; }
+      [data-canvas] h1 { font-size: 27px; }
+      [data-canvas] h2 { font-size: 21px; }
+      [data-sheet-wrap] { padding: 0 !important; }
+      [data-tool] { min-width: 44px !important; min-height: 44px !important; }
+      [data-row] { min-height: 52px !important; }
+      [data-login-card] { box-shadow: none !important; border: 0 !important; background: transparent !important; }
+      [data-dialog-wrap] { align-items: flex-end !important; padding: 0 !important; }
+      [data-dialog] { width: 100% !important; max-width: none !important; max-height: 94% !important; border-radius: 16px 16px 0 0 !important; padding: 20px 18px 24px !important; }
+      [data-share-form] { flex-direction: column !important; align-items: stretch !important; }
+      [data-share-form] > * { width: 100% !important; }
+      [data-hide-mobile] { display: none !important; }
+      [data-only-mobile] { display: flex !important; }
+      [data-editor-head] { padding: 10px 12px !important; }
+      [data-meta-col] { display: none !important; }
+    }
+  </style>
+</helmet>
+
+<div style="display:flex; flex-direction:column; height:100vh; min-height:0; background:#eceef1">
+
+  <sc-if value="{{ showBar }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:none; display:flex; align-items:center; gap:20px; flex-wrap:wrap; padding:8px 16px; background:var(--surface); border-bottom:1px solid var(--line)">
+      <div style="display:flex; align-items:center; gap:8px; margin-right:auto">
+        <span style="width:16px; height:16px; border-radius:5px; background:var(--accent); display:block"></span>
+        <span style="font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted)">DocsLite prototype</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px">
+        <span style="font-size:11px; color:var(--faint)">Viewport</span>
+        <div style="display:flex; gap:2px; padding:2px; background:#eff1f4; border-radius:var(--r-md)">
+          <sc-for list="{{ vpOptions }}" as="vp" hint-placeholder-count="3">
+            <button type="button" onClick="{{ vp.click }}" data-seg-on="{{ vp.on }}" style="padding:4px 10px; font-size:11.5px; font-weight:500; color:var(--muted); background:transparent; border:0; border-radius:6px; cursor:pointer; transition:background 140ms ease" style-hover="color:var(--ink)">{{ vp.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px">
+        <span style="font-size:11px; color:var(--faint)">Your role</span>
+        <div style="display:flex; gap:2px; padding:2px; background:#eff1f4; border-radius:var(--r-md)">
+          <sc-for list="{{ roleOptions }}" as="ro" hint-placeholder-count="3">
+            <button type="button" onClick="{{ ro.click }}" data-seg-on="{{ ro.on }}" style="padding:4px 10px; font-size:11.5px; font-weight:500; color:var(--muted); background:transparent; border:0; border-radius:6px; cursor:pointer; transition:background 140ms ease" style-hover="color:var(--ink)">{{ ro.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px">
+        <sc-for list="{{ jumpOptions }}" as="jp" hint-placeholder-count="4">
+          <button type="button" onClick="{{ jp.click }}" data-seg-on="{{ jp.on }}" style="padding:4px 10px; font-size:11.5px; font-weight:500; white-space:nowrap; color:var(--muted); background:transparent; border:1px solid var(--line); border-radius:var(--r-md); cursor:pointer; transition:all 140ms ease" style-hover="color:var(--ink); border-color:#cfd4da">{{ jp.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="flex:1; min-height:0; display:flex; justify-content:center">
+    <div style="position:relative; overflow:hidden; container-type:inline-size; container-name:app; height:100%; width:100%; max-width:{{ frameMax }}; background:var(--bg); box-shadow:0 0 0 1px rgba(16,19,26,.06)">
+
+      <!-- LOGIN -->
+      <sc-if value="{{ atLogin }}" hint-placeholder-val="{{ true }}">
+        <div style="height:100%; overflow:auto; padding:40px 24px; background-image:radial-gradient(120% 90% at 50% -10%, #f0f0fe 0%, rgba(247,248,250,0) 60%)">
+          <div style="width:100%; max-width:432px; margin:auto">
+            <div style="display:flex; align-items:center; gap:9px; margin-bottom:26px">
+              <span style="width:26px; height:26px; border-radius:7px; background:var(--accent); display:grid; place-items:center; box-shadow:0 1px 2px rgba(91,91,214,.4)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h7"></path><path d="M7 12h10"></path><path d="M7 16h6"></path></svg>
+              </span>
+              <span style="font-size:17px; font-weight:600; letter-spacing:-0.02em; color:var(--ink)">DocsLite</span>
+            </div>
+            <h1 style="margin:0 0 8px; font-family:'Instrument Serif', Georgia, serif; font-weight:400; font-size:38px; line-height:1.1; letter-spacing:-0.01em; color:var(--ink)">Pick an account to continue</h1>
+            <p style="margin:0 0 24px; font-size:14.5px; color:var(--muted)">A demo sign-in — no password. Choose a teammate to see the workspace from their side.</p>
+            <div data-login-card style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-md); overflow:hidden">
+              <sc-for list="{{ userRows }}" as="u" hint-placeholder-count="4">
+                <button type="button" data-row="1" onClick="{{ u.click }}" style="display:flex; align-items:center; gap:12px; width:100%; min-height:64px; padding:12px 16px; background:transparent; border:0; border-bottom:1px solid var(--line-soft); text-align:left; cursor:pointer; transition:background 140ms ease" style-hover="background:#fafbfc">
+                  <span style="width:36px; height:36px; flex:none; border-radius:10px; display:grid; place-items:center; font-size:12.5px; font-weight:600; letter-spacing:0.02em; color:#fff; background:{{ u.color }}">{{ u.initials }}</span>
+                  <span style="display:flex; flex-direction:column; gap:1px; min-width:0; flex:1">
+                    <span style="font-size:14px; font-weight:600; color:var(--ink)">{{ u.name }}</span>
+                    <span style="font-size:12.5px; color:var(--muted)">{{ u.email }}</span>
+                  </span>
+                  <span style="flex:none; display:flex; color:var(--faint)">
+                    <sc-if value="{{ u.busy }}" hint-placeholder-val="{{ false }}">
+                      <span style="width:15px; height:15px; border:2px solid var(--accent-line); border-top-color:var(--accent); border-radius:50%; animation:p2-spin 700ms linear infinite"></span>
+                    </sc-if>
+                    <sc-if value="{{ u.idle }}" hint-placeholder-val="{{ true }}">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                    </sc-if>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+            <p style="margin:16px 0 0; font-size:12px; color:var(--faint)">Demo workspace · sessions are not persisted</p>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- DASHBOARD -->
+      <sc-if value="{{ atDash }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; height:100%; min-height:0">
+          <header data-mtop="1" style="display:none; flex:none; align-items:center; gap:10px; padding:8px 12px; min-height:56px; background:var(--surface); border-bottom:1px solid var(--line)">
+            <button type="button" onClick="{{ openDrawer }}" aria-label="Open navigation" style="width:44px; height:44px; flex:none; display:grid; place-items:center; background:transparent; border:1px solid var(--line); border-radius:var(--r-md); color:var(--text); cursor:pointer">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path></svg>
+            </button>
+            <span style="font-size:15px; font-weight:600; letter-spacing:-0.01em; color:var(--ink)">DocsLite</span>
+            <button type="button" onClick="{{ newDoc }}" style="margin-left:auto; display:flex; align-items:center; gap:6px; min-height:44px; padding:0 14px; font-size:13.5px; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:var(--r-md); cursor:pointer; box-shadow:var(--sh-sm)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>New
+            </button>
+          </header>
+
+          <div style="flex:1; min-height:0; display:flex; position:relative">
+            <aside data-sidebar="1" data-open="{{ drawerAttr }}" style="flex:none; width:264px; display:flex; flex-direction:column; min-height:0; background:var(--surface); border-right:1px solid var(--line)">
+              <div style="flex:none; display:flex; align-items:center; gap:9px; padding:18px 18px 14px">
+                <span style="width:24px; height:24px; border-radius:7px; background:var(--accent); display:grid; place-items:center">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h7"></path><path d="M7 12h10"></path><path d="M7 16h6"></path></svg>
+                </span>
+                <span style="font-size:15.5px; font-weight:600; letter-spacing:-0.02em; color:var(--ink)">DocsLite</span>
+                <button type="button" data-hide-mobile="1" onClick="{{ closeDrawer }}" aria-label="Close navigation" style="display:none; margin-left:auto; width:36px; height:36px; place-items:center; background:transparent; border:0; border-radius:var(--r-md); color:var(--muted); cursor:pointer">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                </button>
+              </div>
+              <div style="flex:none; display:flex; flex-direction:column; gap:7px; padding:0 14px 14px">
+                <button type="button" onClick="{{ newDoc }}" style="display:flex; align-items:center; justify-content:center; gap:7px; min-height:38px; font-size:13.5px; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:var(--r-md); cursor:pointer; box-shadow:0 1px 2px rgba(91,91,214,.35); transition:background 140ms ease" style-hover="background:var(--accent-hover)" style-active="background:#4141ad">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>New document
+                </button>
+                <button type="button" onClick="{{ pickFile }}" style="display:flex; align-items:center; justify-content:center; gap:7px; min-height:38px; font-size:13.5px; font-weight:500; color:var(--text); background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); cursor:pointer; transition:all 140ms ease" style-hover="background:#fafbfc; border-color:#d6dae0">
+                  <sc-if value="{{ uploading }}" hint-placeholder-val="{{ false }}">
+                    <span style="width:14px; height:14px; border:2px solid var(--line); border-top-color:var(--muted); border-radius:50%; animation:p2-spin 700ms linear infinite"></span>
+                  </sc-if>
+                  <sc-if value="{{ notUploading }}" hint-placeholder-val="{{ true }}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m17 8-5-5-5 5"></path><path d="M12 3v12"></path></svg>
+                  </sc-if>{{ uploadLabel }}
+                </button>
+                <input type="file" accept=".txt,.md" ref="{{ fileRef }}" onChange="{{ onFile }}" style="display:none">
+              </div>
+
+              <div style="flex:1; min-height:0; overflow:auto; padding:4px 10px 10px">
+                <div style="display:flex; align-items:center; gap:8px; padding:10px 8px 6px">
+                  <span style="font-size:10.5px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:var(--faint)">My documents</span>
+                  <span style="margin-left:auto; font-size:11px; color:var(--faint)">{{ myCount }}</span>
+                </div>
+                <sc-for list="{{ myDocs }}" as="d" hint-placeholder-count="4">
+                  <button type="button" data-row="1" data-row-active="{{ d.active }}" onClick="{{ d.open }}" style="display:flex; align-items:center; gap:9px; width:100%; min-height:38px; padding:7px 9px; margin-bottom:1px; background:transparent; border:0; border-radius:var(--r-md); text-align:left; color:var(--text); cursor:pointer; transition:background 120ms ease" style-hover="background:#f4f5f7">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none; opacity:.5"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v5h6"></path></svg>
+                    <span style="display:flex; flex-direction:column; gap:0; min-width:0; flex:1">
+                      <span style="font-size:13.5px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ d.title }}</span>
+                      <span data-dim="1" style="font-size:11.5px; color:var(--faint)">{{ d.updated }}</span>
+                    </span>
+                  </button>
+                </sc-for>
+                <sc-if value="{{ noMyDocs }}" hint-placeholder-val="{{ false }}">
+                  <p style="font-size:12.5px; color:var(--faint); margin:2px 9px 12px">No documents yet.</p>
+                </sc-if>
+
+                <div style="display:flex; align-items:center; gap:8px; padding:14px 8px 6px; margin-top:6px; border-top:1px solid var(--line-soft)">
+                  <span style="font-size:10.5px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:var(--faint)">Shared with me</span>
+                  <span style="margin-left:auto; font-size:11px; color:var(--faint)">{{ sharedCount }}</span>
+                </div>
+                <sc-for list="{{ sharedDocs }}" as="sd" hint-placeholder-count="2">
+                  <button type="button" data-row="1" data-row-active="{{ sd.active }}" onClick="{{ sd.open }}" style="display:flex; align-items:center; gap:9px; width:100%; min-height:38px; padding:7px 9px; margin-bottom:1px; background:transparent; border:0; border-radius:var(--r-md); text-align:left; color:var(--text); cursor:pointer; transition:background 120ms ease" style-hover="background:#f4f5f7">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none; opacity:.5"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v5h6"></path></svg>
+                    <span style="display:flex; flex-direction:column; gap:0; min-width:0; flex:1">
+                      <span style="font-size:13.5px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ sd.title }}</span>
+                      <span data-dim="1" style="font-size:11.5px; color:var(--faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ sd.owner }} · {{ sd.role }}</span>
+                    </span>
+                  </button>
+                </sc-for>
+                <sc-if value="{{ noSharedDocs }}" hint-placeholder-val="{{ false }}">
+                  <p style="font-size:12.5px; color:var(--faint); margin:2px 9px 12px">Nothing shared with you.</p>
+                </sc-if>
+              </div>
+
+              <div style="flex:none; display:flex; align-items:center; gap:10px; padding:12px 14px; border-top:1px solid var(--line-soft)">
+                <span style="width:30px; height:30px; flex:none; border-radius:9px; display:grid; place-items:center; font-size:11.5px; font-weight:600; color:#fff; background:{{ meColor }}">{{ meInitials }}</span>
+                <span style="display:flex; flex-direction:column; min-width:0; flex:1">
+                  <span style="font-size:13px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ meName }}</span>
+                  <span style="font-size:11.5px; color:var(--faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ meEmail }}</span>
+                </span>
+                <button type="button" onClick="{{ signOut }}" title="Switch user" aria-label="Switch user" style="flex:none; width:32px; height:32px; display:grid; place-items:center; background:transparent; border:0; border-radius:var(--r-md); color:var(--muted); cursor:pointer; transition:background 140ms ease" style-hover="background:#f4f5f7; color:var(--ink)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
+                </button>
+              </div>
+            </aside>
+
+            <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ closeDrawer }}" style="position:absolute; inset:0; z-index:20; background:rgba(16,19,26,.32)"></div>
+            </sc-if>
+
+            <main data-work="1" style="flex:1; min-width:0; overflow:auto; padding:34px 36px">
+              <sc-if value="{{ hasAnyDoc }}" hint-placeholder-val="{{ true }}">
+                <div style="max-width:880px">
+                  <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:18px">
+                    <h2 style="margin:0; font-size:21px; font-weight:600; letter-spacing:-0.02em; color:var(--ink)">Documents</h2>
+                    <span style="font-size:13px; color:var(--faint)">{{ totalLabel }}</span>
+                  </div>
+                  <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); overflow:hidden">
+                    <sc-for list="{{ recentRows }}" as="rr" hint-placeholder-count="5">
+                      <button type="button" data-row="1" onClick="{{ rr.open }}" style="display:flex; align-items:center; gap:14px; width:100%; min-height:62px; padding:12px 18px; background:transparent; border:0; border-bottom:1px solid var(--line-soft); text-align:left; cursor:pointer; transition:background 140ms ease" style-hover="background:#fafbfc">
+                        <span style="width:34px; height:34px; flex:none; border-radius:9px; display:grid; place-items:center; background:#f4f5f7; color:var(--muted)">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v5h6"></path><path d="M8 13h8"></path><path d="M8 17h5"></path></svg>
+                        </span>
+                        <span style="display:flex; flex-direction:column; gap:2px; min-width:0; flex:1">
+                          <span style="font-size:14px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ rr.title }}</span>
+                          <span style="font-size:12.5px; color:var(--muted)">{{ rr.owner }} · {{ rr.updated }}</span>
+                        </span>
+                        <span data-meta-col="1" style="flex:none; display:flex; align-items:center; gap:5px; padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:500; color:{{ rr.pillText }}; background:{{ rr.pillBg }}">{{ rr.role }}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b6bcc5" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m9 18 6-6-6-6"></path></svg>
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ noDocsAtAll }}" hint-placeholder-val="{{ false }}">
+                <div style="max-width:520px; margin:6vh auto 0; text-align:center; display:flex; flex-direction:column; align-items:center">
+                  <div style="position:relative; width:120px; height:96px; margin-bottom:26px">
+                    <span style="position:absolute; left:16px; top:8px; width:76px; height:80px; background:var(--surface); border:1px solid var(--line); border-radius:10px; transform:rotate(-7deg); box-shadow:var(--sh-sm)"></span>
+                    <span style="position:absolute; left:30px; top:6px; width:76px; height:80px; background:var(--surface); border:1px solid var(--line-soft); border-radius:10px; transform:rotate(6deg); box-shadow:var(--sh-sm)"></span>
+                    <span style="position:absolute; left:24px; top:16px; width:76px; height:80px; background:var(--accent-tint); border:1px solid var(--accent-line); border-radius:10px; display:flex; flex-direction:column; gap:7px; padding:16px 14px">
+                      <span style="height:4px; border-radius:2px; background:#c9c9f4; width:80%"></span>
+                      <span style="height:4px; border-radius:2px; background:#dcdcf9; width:100%"></span>
+                      <span style="height:4px; border-radius:2px; background:#dcdcf9; width:65%"></span>
+                    </span>
+                  </div>
+                  <h2 style="margin:0 0 8px; font-family:'Instrument Serif', Georgia, serif; font-weight:400; font-size:28px; color:var(--ink)">Nothing here yet</h2>
+                  <p style="margin:0 0 22px; font-size:14px; color:var(--muted); max-width:36ch">Create a document, or upload a .txt or .md file and we'll turn it into one you can edit.</p>
+                  <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center">
+                    <button type="button" onClick="{{ newDoc }}" style="display:flex; align-items:center; gap:7px; min-height:40px; padding:0 16px; white-space:nowrap; font-size:13.5px; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:var(--r-md); cursor:pointer; box-shadow:0 1px 2px rgba(91,91,214,.35)" style-hover="background:var(--accent-hover)">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>New document
+                    </button>
+                    <button type="button" onClick="{{ pickFile }}" style="display:flex; align-items:center; gap:7px; min-height:40px; padding:0 16px; white-space:nowrap; font-size:13.5px; font-weight:500; color:var(--text); background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); cursor:pointer" style-hover="background:#fafbfc">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m17 8-5-5-5 5"></path><path d="M12 3v12"></path></svg>Upload .txt / .md
+                    </button>
+                  </div>
+                </div>
+              </sc-if>
+            </main>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- EDITOR -->
+      <sc-if value="{{ atDoc }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; height:100%; min-height:0; background:var(--bg)">
+          <header data-editor-head="1" style="flex:none; display:flex; align-items:center; gap:10px; padding:10px 16px; min-height:57px; background:var(--surface); border-bottom:1px solid var(--line)">
+            <button type="button" onClick="{{ goDash }}" title="Back to documents" aria-label="Back to documents" style="flex:none; width:34px; height:34px; display:grid; place-items:center; background:transparent; border:0; border-radius:var(--r-md); color:var(--muted); cursor:pointer; transition:background 140ms ease" style-hover="background:#f4f5f7; color:var(--ink)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+            </button>
+            <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ true }}">
+              <input value="{{ docTitle }}" onChange="{{ onTitle }}" aria-label="Document title" placeholder="Untitled document" style="flex:1; min-width:0; font-size:15px; font-weight:600; letter-spacing:-0.01em; color:var(--ink); background:transparent; border:1px solid transparent; border-radius:var(--r-sm); padding:6px 8px; transition:all 140ms ease" style-hover="border-color:var(--line); background:#fafbfc" style-focus="border-color:var(--accent); background:var(--surface); outline:none; box-shadow:0 0 0 3px rgba(91,91,214,.14)">
+            </sc-if>
+            <sc-if value="{{ notOwner }}" hint-placeholder-val="{{ false }}">
+              <span style="flex:1; min-width:0; font-size:15px; font-weight:600; letter-spacing:-0.01em; color:var(--ink); padding:6px 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ docTitle }}</span>
+            </sc-if>
+            <span style="flex:none; display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:500; white-space:nowrap; color:{{ rolePillText }}; background:{{ rolePillBg }}">{{ roleLabel }}</span>
+            <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ true }}">
+              <button type="button" onClick="{{ openShare }}" style="flex:none; display:flex; align-items:center; gap:7px; height:34px; padding:0 14px; font-size:13.5px; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:var(--r-md); cursor:pointer; box-shadow:0 1px 2px rgba(91,91,214,.35); transition:background 140ms ease" style-hover="background:var(--accent-hover)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><path d="m16 6-4-4-4 4"></path><path d="M12 2v13"></path></svg>Share
+              </button>
+              <button type="button" onClick="{{ deleteDoc }}" title="Delete document" aria-label="Delete document" style="flex:none; width:34px; height:34px; display:grid; place-items:center; background:transparent; border:0; border-radius:var(--r-md); color:var(--muted); cursor:pointer; transition:all 140ms ease" style-hover="background:var(--danger-tint); color:var(--danger)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </sc-if>
+          </header>
+
+          <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:none; display:flex; align-items:center; gap:2px; padding:8px 16px; min-height:49px; background:var(--surface); border-bottom:1px solid var(--line); overflow-x:auto">
+              <button type="button" data-tool="1" data-tool-on="{{ h1On }}" onClick="{{ doH1 }}" title="Heading 1" style="flex:none; min-width:32px; height:32px; padding:0 9px; display:inline-flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:var(--muted); background:transparent; border:0; border-radius:var(--r-sm); cursor:pointer; transition:all 120ms ease" style-hover="background:#f4f5f7; color:var(--ink)">H1</button>
+              <button type="button" data-tool="1" data-tool-on="{{ h2On }}" onClick="{{ doH2 }}" title="Heading 2" style="flex:none; min-width:32px; height:32px; padding:0 9px; display:inline-flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:var(--muted); background:transparent; border:0; border-radius:var(--r-sm); cursor:pointer; transition:all 120ms ease" style-hover="background:#f4f5f7; color:var(--ink)">H2</button>
+              <button type="button" data-tool="1" data-tool-on="{{ h3On }}" onClick="{{ doH3 }}" title="Heading 3" style="flex:none; min-width:32px; height:32px; padding:0 9px; display:inline-flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:var(--muted); background:transparent; border:0; border-radius:var(--r-sm); cursor:pointer; transition:all 120ms ease" style-hover="background:#f4f5f7; color:var(--ink)">H3</button>
+              <button type="button" data-tool="1" data-tool-on="{{ pOn }}" onClick="{{ doP }}" title="Paragraph" style="flex:none; min-width:32px; height:32px; padding:0 9px; display:inline-flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:var(--muted); background:transparent; border:0; border-radius:var(--r-sm); cursor:pointer; transition:all 120ms ease" style-hover="background:#f4f5f7; color:var(--ink)">P</button>
+              <span style="flex:none; width:1px; height:20px; background:var(--line); margin:0 8px"></span>
+              <button type="button" data-tool="1" data-tool-on="{{ boldOn }}" onClick="{{ doBold }}" title="Bold" aria-label="Bold" style="flex:none; min-width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); background:transparent; border:0; border-radius:var(--r-sm); cursor:pointer; transition:all 120ms ease" style-hover="background:#f4f5f7; color:var(--ink)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h8a4 4 0 0 1 0 8H6z"></path><path d="M6 12h9a4 4 0 0 1 0 8H6z"></path></svg>
+              </button>
+              <button type="button" data-tool="1" data-tool-on="{{ italicOn }}" onClick="{{ doItalic }}" title="Italic" aria-label="Italic" style="flex:none; min-width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); background:transparent; border:0; border-radius:var(--r-sm); cursor:pointer; transition:all 120ms ease" style-hover="background:#f4f5f7; color:var(--ink)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 4h-9"></path><path d="M14 20H5"></path><path d="M15 4 9 20"></path></svg>
+              </button>
+              <button type="button" data-tool="1" data-tool-on="{{ underlineOn }}" onClick="{{ doUnderline }}" title="Underline" aria-label="Underline" style="flex:none; min-width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); background:transparent; border:0; border-radius:var(--r-sm); cursor:pointer; transition:all 120ms ease" style-hover="background:#f4f5f7; color:var(--ink)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"></path><path d="M4 20h16"></path></svg>
+              </button>
+              <span style="flex:none; width:1px; height:20px; background:var(--line); margin:0 8px"></span>
+              <button type="button" data-tool="1" data-tool-on="{{ ulOn }}" onClick="{{ doUl }}" title="Bulleted list" aria-label="Bulleted list" style="flex:none; min-width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); background:transparent; border:0; border-radius:var(--r-sm); cursor:pointer; transition:all 120ms ease" style-hover="background:#f4f5f7; color:var(--ink)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M3.5 6h.01"></path><path d="M3.5 12h.01"></path><path d="M3.5 18h.01"></path></svg>
+              </button>
+              <button type="button" data-tool="1" data-tool-on="{{ olOn }}" onClick="{{ doOl }}" title="Numbered list" aria-label="Numbered list" style="flex:none; min-width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); background:transparent; border:0; border-radius:var(--r-sm); cursor:pointer; transition:all 120ms ease" style-hover="background:#f4f5f7; color:var(--ink)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h11"></path><path d="M10 12h11"></path><path d="M10 18h11"></path><path d="M4 6h1v4"></path><path d="M3.6 10h2.2"></path><path d="M6 18H3.8c0-1.1 2-1.8 2-2.9 0-.7-.7-1.1-2-.8"></path></svg>
+              </button>
+
+              <div style="margin-left:auto; flex:none; display:flex; align-items:center; padding-left:14px">
+                <sc-if value="{{ isSaving }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--muted); white-space:nowrap">
+                    <span style="width:12px; height:12px; border:2px solid var(--line); border-top-color:var(--muted); border-radius:50%; animation:p2-spin 700ms linear infinite"></span>Saving…
+                  </span>
+                </sc-if>
+                <sc-if value="{{ isSaved }}" hint-placeholder-val="{{ true }}">
+                  <span style="display:inline-flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); white-space:nowrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Saved
+                  </span>
+                </sc-if>
+                <sc-if value="{{ isFailed }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:500; color:var(--danger); white-space:nowrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>Save failed — keep typing to retry
+                  </span>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ viewOnly }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:none; display:flex; align-items:center; gap:8px; padding:11px 18px; background:#f4f5f7; border-bottom:1px solid var(--line); font-size:12.5px; color:var(--muted)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <span><strong style="font-weight:600; color:var(--ink)">View only.</strong> Ask {{ docOwnerName }} for edit access.</span>
+            </div>
+          </sc-if>
+
+          <div data-sheet-wrap="1" style="flex:1; min-height:0; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:32px 24px 120px">
+            <div data-sheet="1" style="width:100%; max-width:{{ sheetMax }}; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:64px 72px 96px; min-height:100%">
+              <div data-canvas="1" ref="{{ canvasRef }}" contentEditable="{{ canEdit }}" suppressContentEditableWarning="{{ true }}" onInput="{{ onInput }}" onKeyUp="{{ syncMarks }}" onMouseUp="{{ syncMarks }}" data-placeholder="Start writing…"></div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- NOT FOUND -->
+      <sc-if value="{{ at404 }}" hint-placeholder-val="{{ false }}">
+        <div style="height:100%; overflow:auto; display:flex; flex-direction:column; align-items:center; padding:48px 24px; text-align:center"><div style="margin:auto; display:flex; flex-direction:column; align-items:center">
+          <div style="width:52px; height:52px; border-radius:14px; display:grid; place-items:center; background:var(--surface); border:1px solid var(--line); box-shadow:var(--sh-sm); margin-bottom:20px">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v5h6"></path><path d="m9.5 12.5 5 5"></path><path d="m14.5 12.5-5 5"></path></svg>
+          </div>
+          <h2 style="margin:0 0 8px; font-family:'Instrument Serif', Georgia, serif; font-weight:400; font-size:30px; color:var(--ink)">This document isn't available</h2>
+          <p style="margin:0 0 22px; font-size:14px; color:var(--muted); max-width:40ch">It may have been deleted, or you may not have access yet. Ask the owner to share it with you.</p>
+          <button type="button" onClick="{{ goDash }}" style="display:flex; align-items:center; gap:7px; min-height:40px; padding:0 16px; white-space:nowrap; font-size:13.5px; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:var(--r-md); cursor:pointer; box-shadow:0 1px 2px rgba(91,91,214,.35)" style-hover="background:var(--accent-hover)">Back to documents</button>
+        </div></div>
+      </sc-if>
+
+      <!-- SHARE DIALOG -->
+      <sc-if value="{{ shareOpen }}" hint-placeholder-val="{{ false }}">
+        <div data-dialog-wrap="1" onClick="{{ backdropClick }}" style="position:absolute; inset:0; z-index:40; display:flex; align-items:center; justify-content:center; padding:24px; background:rgba(16,19,26,.36); backdrop-filter:blur(2px)">
+          <div data-dialog="1" onClick="{{ stop }}" style="width:min(540px, 100%); max-height:88%; overflow:auto; display:flex; flex-direction:column; gap:18px; padding:22px 22px 20px; background:var(--surface); border-radius:14px; box-shadow:var(--sh-lg); animation:p2-dialog 140ms cubic-bezier(.32,.72,0,1)">
+            <div style="display:flex; align-items:flex-start; gap:12px">
+              <div style="flex:1; min-width:0">
+                <div style="font-size:16.5px; font-weight:600; letter-spacing:-0.01em; color:var(--ink)">Share document</div>
+                <div style="font-size:12.5px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ docTitle }}</div>
+              </div>
+              <button type="button" onClick="{{ closeShare }}" aria-label="Close" style="flex:none; width:32px; height:32px; display:grid; place-items:center; background:transparent; border:0; border-radius:var(--r-md); color:var(--muted); cursor:pointer; transition:background 140ms ease" style-hover="background:#f4f5f7; color:var(--ink)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+              </button>
+            </div>
+            <div>
+              <div data-share-form="1" style="display:flex; align-items:center; gap:8px">
+                <input type="email" placeholder="Teammate's email" value="{{ shareEmail }}" onChange="{{ onShareEmail }}" onKeyDown="{{ onShareKey }}" style="flex:1; min-width:0; height:40px; padding:9px 12px; line-height:1.3; font-size:14px; background:var(--surface); border:1px solid {{ inputBorder }}; border-radius:var(--r-md); transition:all 140ms ease" style-focus="border-color:var(--accent); outline:none; box-shadow:0 0 0 3px rgba(91,91,214,.14)">
+                <select value="{{ shareRole }}" onChange="{{ onShareRole }}" aria-label="Access level" style="flex:none; height:40px; min-width:124px; padding:0 8px 0 12px; font-size:13.5px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); cursor:pointer">
+                  <option value="edit">Can edit</option>
+                  <option value="view">Can view</option>
+                </select>
+                <button type="button" onClick="{{ addCollab }}" style="flex:none; height:40px; padding:0 16px; font-size:13.5px; font-weight:600; color:#fff; background:var(--accent); border:0; border-radius:var(--r-md); cursor:pointer; box-shadow:0 1px 2px rgba(91,91,214,.35); transition:background 140ms ease" style-hover="background:var(--accent-hover)">Share</button>
+              </div>
+              <sc-if value="{{ shareError }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; align-items:center; gap:7px; margin-top:9px; font-size:12.5px; color:var(--danger)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>{{ shareError }}
+                </div>
+              </sc-if>
+              <sc-if value="{{ noShareError }}" hint-placeholder-val="{{ true }}">
+                <p style="margin:9px 0 0; font-size:12px; color:var(--faint)">Demo teammates: {{ demoEmails }}</p>
+              </sc-if>
+            </div>
+            <div>
+              <div style="font-size:10.5px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:var(--faint); padding-bottom:10px; border-bottom:1px solid var(--line-soft)">People with access</div>
+              <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--line-soft)">
+                <span style="width:32px; height:32px; flex:none; border-radius:9px; display:grid; place-items:center; font-size:11.5px; font-weight:600; color:#fff; background:{{ ownerColor }}">{{ ownerInitials }}</span>
+                <span style="display:flex; flex-direction:column; min-width:0; flex:1">
+                  <span style="font-size:13.5px; font-weight:600; color:var(--ink)">{{ ownerName }}</span>
+                  <span style="font-size:12px; color:var(--muted)">{{ ownerEmail }}</span>
+                </span>
+                <span style="flex:none; font-size:12.5px; color:var(--faint); padding-right:6px">Owner</span>
+              </div>
+              <sc-for list="{{ collabRows }}" as="cb" hint-placeholder-count="2">
+                <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--line-soft)">
+                  <span style="width:32px; height:32px; flex:none; border-radius:9px; display:grid; place-items:center; font-size:11.5px; font-weight:600; color:#fff; background:{{ cb.color }}">{{ cb.initials }}</span>
+                  <span style="display:flex; flex-direction:column; min-width:0; flex:1">
+                    <span style="font-size:13.5px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ cb.name }}</span>
+                    <span style="font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ cb.email }}</span>
+                  </span>
+                  <select value="{{ cb.role }}" onChange="{{ cb.setRole }}" aria-label="Access level" style="flex:none; height:34px; min-width:114px; padding:0 6px 0 10px; font-size:13px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); cursor:pointer">
+                    <option value="edit">Can edit</option>
+                    <option value="view">Can view</option>
+                  </select>
+                  <button type="button" onClick="{{ cb.remove }}" title="Remove access" aria-label="Remove access" style="flex:none; width:32px; height:32px; display:grid; place-items:center; background:transparent; border:0; border-radius:var(--r-md); color:var(--faint); cursor:pointer; transition:all 140ms ease" style-hover="background:var(--danger-tint); color:var(--danger)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                  </button>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noCollabs }}" hint-placeholder-val="{{ false }}">
+                <p style="margin:0; padding:14px 0 4px; font-size:12.5px; color:var(--faint)">Only you have access. Add a teammate above to start collaborating.</p>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- TOASTS -->
+      <div style="position:absolute; z-index:50; bottom:22px; left:0; right:0; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0 16px; pointer-events:none">
+        <sc-for list="{{ toasts }}" as="ts" hint-placeholder-count="1">
+          <div data-toast="{{ ts.kind }}" style="pointer-events:auto; display:flex; align-items:center; gap:10px; max-width:min(420px, 100%); padding:11px 10px 11px 14px; background:#14181f; color:#f4f5f7; border-radius:10px; box-shadow:var(--sh-lg); animation:p2-toast 180ms cubic-bezier(.32,.72,0,1); font-size:13px">
+            <span data-dot="1" style="flex:none; width:7px; height:7px; border-radius:50%; background:#4ade9b"></span>
+            <span style="flex:1">{{ ts.msg }}</span>
+            <button type="button" onClick="{{ ts.dismiss }}" aria-label="Dismiss" style="flex:none; width:26px; height:26px; display:grid; place-items:center; background:transparent; border:0; border-radius:6px; color:#9aa2ad; cursor:pointer; transition:color 140ms ease" style-hover="color:#fff">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </button>
+          </div>
+        </sc-for>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showPrototypeBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;login&quot;,&quot;dashboard&quot;,&quot;editor&quot;,&quot;notfound&quot;],&quot;default&quot;:&quot;login&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;canvasMeasure&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:760,&quot;min&quot;:640,&quot;max&quot;:900,&quot;step&quot;:20,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Editor&quot;}}">
+class Component extends DCLogic {
+  USERS = [
+    { id: 'u1', name: 'Alice Reyes', email: 'alice@docslite.app', initials: 'AR', color: '#4f4fc9' },
+    { id: 'u2', name: 'Ben Okafor', email: 'ben@docslite.app', initials: 'BO', color: '#0f766e' },
+    { id: 'u3', name: 'Mira Lindqvist', email: 'mira@docslite.app', initials: 'ML', color: '#b45309' },
+    { id: 'u4', name: 'Tomas Vidal', email: 'tomas@docslite.app', initials: 'TV', color: '#9333a8' }
+  ];
+
+  seed() {
+    return [
+      { id: 'd1', title: 'Q3 Product Review', owner: 'u1', updated: '12 minutes ago', collabs: [{ id: 'u2', role: 'edit' }], html: `<h1>Q3 Product Review</h1><p>Three months, one question: did the editor get faster for the people who write in it every day? Numbers first, arguments after.</p><h2>What shipped</h2><ul><li><strong>Autosave</strong> moved off the request path. Median save is now 90ms.</li><li>Formatting toolbar rebuilt with real active states.</li><li>Sharing by email, with two access levels.</li></ul><h3>Open questions</h3><ol><li>Do we need a third access level, or is <em>can edit</em> / <em>can view</em> enough?</li><li>Should uploads keep the original filename as the title?</li></ol><p>Everything else — comments, history, presence — stays out of scope until the writing surface is <u>unarguably good</u>.</p>` },
+      { id: 'd2', title: 'Onboarding Rewrite', owner: 'u1', updated: '2 hours ago', collabs: [], html: `<h1>Onboarding Rewrite</h1><p>The current first run explains the product. The new one should hand the person a blank page and get out of the way.</p><h2>Principles</h2><ul><li>No tour. No checklist.</li><li>One document, pre-titled, cursor already blinking.</li></ul>` },
+      { id: 'd3', title: 'Pricing Experiments — Notes', owner: 'u1', updated: 'Yesterday', collabs: [{ id: 'u3', role: 'view' }], html: `<h1>Pricing Experiments</h1><p>Raw notes from the three tests we ran in June. Nothing here is decided.</p><ol><li>Per-seat, flat rate, and usage-tiered.</li><li>Seat pricing won on clarity, lost on small teams.</li></ol>` },
+      { id: 'd4', title: 'Release Checklist', owner: 'u1', updated: '3 days ago', collabs: [], html: `<h1>Release Checklist</h1><ul><li>Token audit across every surface</li><li>Keyboard pass on the toolbar</li><li>Contrast check — AA on every state</li></ul>` },
+      { id: 'd5', title: 'Design System Audit', owner: 'u3', updated: '5 hours ago', collabs: [{ id: 'u1', role: 'edit' }], html: `<h1>Design System Audit</h1><p>Every surface in the product, measured against the token set.</p><h2>Findings</h2><ul><li>Four one-off greys that should be scale steps.</li><li>Two shadows nobody can tell apart. One removed.</li></ul>` },
+      { id: 'd6', title: 'Board Update — July', owner: 'u2', updated: 'Monday', collabs: [{ id: 'u1', role: 'view' }], html: `<h1>Board Update — July</h1><p>Retention held. Activation moved four points after the editor work landed.</p><h3>Next quarter</h3><p>One theme: make sharing feel as safe as it actually is.</p>` }
+    ];
+  }
+
+  state = {
+    route: null, userId: null, signingIn: null, docId: null,
+    docs: this.seed(), emptyMode: false, viewport: 'desktop', drawer: false,
+    shareOpen: false, shareEmail: '', shareRole: 'edit', shareError: '',
+    save: 'saved', toasts: [], marks: {}, block: 'p', uploading: false, roleOverride: null
+  };
+
+  componentDidMount() {
+    this._sel = () => this.syncMarks();
+    document.addEventListener('selectionchange', this._sel);
+    this.loadCanvas();
+  }
+  componentWillUnmount() {
+    document.removeEventListener('selectionchange', this._sel);
+    clearTimeout(this._saveT);
+  }
+  componentDidUpdate() { this.loadCanvas(); }
+
+  u(id) { return this.USERS.find(x => x.id === id) || this.USERS[0]; }
+  me() { return this.u(this.state.userId || 'u1'); }
+  docs() { return this.state.emptyMode ? [] : this.state.docs; }
+  doc() { return this.docs().find(d => d.id === this.state.docId) || null; }
+  rawRole(d) {
+    if (!d) return null;
+    const me = this.me().id;
+    if (d.owner === me) return 'owner';
+    const c = (d.collabs || []).find(x => x.id === me);
+    return c ? c.role : null;
+  }
+  role(d) { return this.state.roleOverride || this.rawRole(d); }
+
+  go = (route) => this.setState({ route, drawer: false, shareOpen: false });
+  signIn = (id) => {
+    this.setState({ signingIn: id });
+    setTimeout(() => this.setState({ signingIn: null, userId: id, route: 'dash', docId: null, roleOverride: null }), 420);
+  };
+  signOut = () => this.setState({ route: 'login', userId: null, docId: null, drawer: false, roleOverride: null });
+  openDoc = (id) => { this._loaded = null; this.setState({ route: 'doc', docId: id, drawer: false, save: 'saved', roleOverride: null }); };
+  goDash = () => this.setState({ route: 'dash', shareOpen: false });
+  openDrawer = () => this.setState({ drawer: true });
+  closeDrawer = () => this.setState({ drawer: false });
+
+  newDoc = () => {
+    const id = 'd' + Date.now();
+    const doc = { id, title: 'Untitled document', owner: this.me().id, updated: 'Just now', collabs: [], html: '' };
+    this._loaded = null;
+    this.setState(s => ({ docs: [doc].concat(s.docs), emptyMode: false, route: 'doc', docId: id, drawer: false, save: 'saved', roleOverride: null }));
+  };
+
+  deleteDoc = () => {
+    const d = this.doc(); if (!d) return;
+    this.setState(s => ({ docs: s.docs.filter(x => x.id !== d.id), route: 'dash', docId: null, shareOpen: false }));
+    this.toast('success', 'Deleted “' + d.title + '”.');
+  };
+
+  onTitle = (e) => {
+    const v = e.target.value, id = this.state.docId;
+    this.setState(s => ({ docs: s.docs.map(d => d.id === id ? Object.assign({}, d, { title: v, updated: 'Just now' }) : d) }));
+    this.touch();
+  };
+
+  canvasRef = (el) => {
+    this.canvas = el;
+    if (!el) { this._loaded = null; return; }
+    this.loadCanvas();
+  };
+  loadCanvas() {
+    const d = this.doc();
+    if (!this.canvas || !d || this._loaded === d.id) return;
+    this.canvas.innerHTML = d.html || '';
+    this._loaded = d.id;
+    this.markEmpty();
+  }
+  markEmpty() {
+    if (!this.canvas) return;
+    if (this.canvas.textContent.trim()) this.canvas.removeAttribute('data-empty');
+    else this.canvas.setAttribute('data-empty', '1');
+  }
+  onInput = () => { this.markEmpty(); this.touch(); this.syncMarks(); };
+  touch = () => {
+    clearTimeout(this._saveT);
+    if (this.state.save !== 'saving') this.setState({ save: 'saving' });
+    this._saveT = setTimeout(() => {
+      const id = this.state.docId, html = this.canvas ? this.canvas.innerHTML : '';
+      this.setState(s => ({ save: 'saved', docs: s.docs.map(d => d.id === id ? Object.assign({}, d, { html, updated: 'Just now' }) : d) }));
+    }, 750);
+  };
+  exec = (cmd, val) => {
+    if (!this.canvas) return;
+    this.canvas.focus();
+    try { document.execCommand(cmd, false, val); } catch (e) { /* noop */ }
+    this.markEmpty(); this.touch(); this.syncMarks();
+  };
+  syncMarks = () => {
+    if (!this.canvas) return;
+    const sel = document.getSelection();
+    if (!sel || !sel.anchorNode || !this.canvas.contains(sel.anchorNode)) return;
+    const m = {};
+    ['bold', 'italic', 'underline', 'insertUnorderedList', 'insertOrderedList'].forEach(c => {
+      try { m[c] = document.queryCommandState(c); } catch (e) { m[c] = false; }
+    });
+    let block = 'p';
+    try { block = String(document.queryCommandValue('formatBlock') || 'p').toLowerCase(); } catch (e) { /* noop */ }
+    if (block === 'div' || block === '') block = 'p';
+    if (this.state.block !== block || JSON.stringify(this.state.marks) !== JSON.stringify(m)) this.setState({ block, marks: m });
+  };
+
+  fileRef = (el) => { this.file = el; };
+  pickFile = () => { if (this.file) this.file.click(); };
+  onFile = (e) => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    if (!/\.(txt|md|markdown)$/i.test(f.name)) { this.toast('error', 'Only .txt and .md files can be uploaded.'); return; }
+    if (f.size > 1024 * 1024) { this.toast('error', 'That file is over 1 MB — try a smaller one.'); return; }
+    this.setState({ uploading: true });
+    const r = new FileReader();
+    r.onerror = () => { this.setState({ uploading: false }); this.toast('error', 'Upload failed. Try that file again.'); };
+    r.onload = () => setTimeout(() => {
+      const id = 'd' + Date.now();
+      const title = f.name.replace(/\.(txt|md|markdown)$/i, '');
+      const doc = { id, title, owner: this.me().id, updated: 'Just now', collabs: [], html: this.toHtml(String(r.result || '')) };
+      this._loaded = null;
+      this.setState(s => ({ uploading: false, docs: [doc].concat(s.docs), emptyMode: false, route: 'doc', docId: id, save: 'saved', roleOverride: null }));
+      this.toast('success', 'Imported “' + title + '”.');
+    }, 500);
+    r.readAsText(f);
+  };
+  esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  toHtml(text) {
+    const out = []; let list = null;
+    const close = () => { if (list) { out.push('</' + list + '>'); list = null; } };
+    String(text).split(/\r?\n/).forEach(raw => {
+      const line = raw.trim();
+      if (!line) { close(); return; }
+      let m;
+      if ((m = line.match(/^(#{1,3})\s+(.*)$/))) { close(); out.push('<h' + m[1].length + '>' + this.esc(m[2]) + '</h' + m[1].length + '>'); return; }
+      if ((m = line.match(/^[-*+]\s+(.*)$/))) { if (list !== 'ul') { close(); out.push('<ul>'); list = 'ul'; } out.push('<li>' + this.esc(m[1]) + '</li>'); return; }
+      if ((m = line.match(/^\d+[.)]\s+(.*)$/))) { if (list !== 'ol') { close(); out.push('<ol>'); list = 'ol'; } out.push('<li>' + this.esc(m[1]) + '</li>'); return; }
+      close(); out.push('<p>' + this.esc(line) + '</p>');
+    });
+    close();
+    return out.join('') || '';
+  }
+
+  openShare = () => this.setState({ shareOpen: true, shareError: '', shareEmail: '' });
+  closeShare = () => this.setState({ shareOpen: false, shareError: '' });
+  addCollab = () => {
+    const d = this.doc(); if (!d) return;
+    const email = this.state.shareEmail.trim().toLowerCase();
+    if (!email) return this.setState({ shareError: 'Enter an email address.' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return this.setState({ shareError: 'That doesn’t look like an email address.' });
+    const user = this.USERS.find(u => u.email.toLowerCase() === email);
+    if (!user) return this.setState({ shareError: 'No DocsLite account uses that email.' });
+    if (user.id === d.owner) return this.setState({ shareError: user.name.split(' ')[0] + ' already owns this document.' });
+    if ((d.collabs || []).some(c => c.id === user.id)) return this.setState({ shareError: user.name.split(' ')[0] + ' already has access.' });
+    const role = this.state.shareRole;
+    this.setState(s => ({
+      shareEmail: '', shareError: '',
+      docs: s.docs.map(x => x.id === d.id ? Object.assign({}, x, { collabs: (x.collabs || []).concat([{ id: user.id, role }]) }) : x)
+    }));
+    this.toast('success', user.name + ' can now ' + (role === 'edit' ? 'edit' : 'view') + ' this document.');
+  };
+  setCollabRole = (uid, role) => {
+    const d = this.doc(); if (!d) return;
+    this.setState(s => ({ docs: s.docs.map(x => x.id === d.id ? Object.assign({}, x, { collabs: x.collabs.map(c => c.id === uid ? { id: uid, role } : c) }) : x) }));
+    this.toast('success', this.u(uid).name.split(' ')[0] + ' can now ' + (role === 'edit' ? 'edit' : 'view') + '.');
+  };
+  removeCollab = (uid) => {
+    const d = this.doc(); if (!d) return;
+    this.setState(s => ({ docs: s.docs.map(x => x.id === d.id ? Object.assign({}, x, { collabs: x.collabs.filter(c => c.id !== uid) }) : x) }));
+    this.toast('success', 'Removed ' + this.u(uid).name.split(' ')[0] + '’s access.');
+  };
+
+  toast = (kind, msg) => {
+    const id = 't' + Date.now() + Math.random();
+    this.setState(s => ({ toasts: s.toasts.concat([{ id, kind, msg }]) }));
+    setTimeout(() => this.dismiss(id), 4200);
+  };
+  dismiss = (id) => this.setState(s => ({ toasts: s.toasts.filter(t => t.id !== id) }));
+
+  PILL = {
+    owner: { bg: '#f0f0fe', text: '#4646b8' },
+    edit: { bg: '#f1f3f5', text: '#4a5260' },
+    view: { bg: 'transparent', text: '#6e7681' }
+  };
+  labelFor(role) { return role === 'owner' ? 'Owner' : role === 'edit' ? 'Can edit' : 'View only'; }
+
+  renderVals() {
+    const s = this.state;
+    const start = this.props.startScreen || 'login';
+    const route = s.route || (start === 'dashboard' ? 'dash' : start === 'editor' ? 'doc' : start === 'notfound' ? '404' : 'login');
+    const docId = s.docId || (route === 'doc' ? 'd1' : null);
+    if (route === 'doc' && !s.docId) s.docId = docId;
+    const me = this.me();
+    const all = this.docs();
+    const d = all.find(x => x.id === docId) || null;
+    const role = this.role(d);
+    const mine = all.filter(x => x.owner === me.id);
+    const shared = all.filter(x => x.owner !== me.id && (x.collabs || []).some(c => c.id === me.id));
+    const row = (x) => {
+      const r = this.rawRole(x);
+      const p = this.PILL[r] || this.PILL.view;
+      return {
+        id: x.id, title: x.title, updated: x.updated, active: x.id === docId ? '1' : null,
+        owner: x.owner === me.id ? 'You' : this.u(x.owner).name.split(' ')[0],
+        role: this.labelFor(r), pillBg: p.bg, pillText: p.text,
+        open: () => this.openDoc(x.id)
+      };
+    };
+    const seg = (val, key, cur, label) => ({ label, on: cur === val ? '1' : null, click: () => this.setState({ [key]: val }) });
+    const owner = d ? this.u(d.owner) : me;
+    const rp = this.PILL[role] || this.PILL.view;
+
+    return {
+      showBar: this.props.showPrototypeBar !== false,
+      frameMax: s.viewport === 'mobile' ? '390px' : s.viewport === 'tablet' ? '834px' : '100%',
+      sheetMax: (this.props.canvasMeasure || 760) + 'px',
+      atLogin: route === 'login', atDash: route === 'dash', atDoc: route === 'doc' && !!d, at404: route === '404' || (route === 'doc' && !d),
+
+      vpOptions: [seg('desktop', 'viewport', s.viewport, 'Desktop'), seg('tablet', 'viewport', s.viewport, 'Tablet'), seg('mobile', 'viewport', s.viewport, 'Mobile')],
+      roleOptions: [
+        { label: 'Actual', on: !s.roleOverride ? '1' : null, click: () => this.setState({ roleOverride: null }) },
+        { label: 'Can edit', on: s.roleOverride === 'edit' ? '1' : null, click: () => this.setState({ roleOverride: 'edit' }) },
+        { label: 'View only', on: s.roleOverride === 'view' ? '1' : null, click: () => this.setState({ roleOverride: 'view' }) }
+      ],
+      jumpOptions: [
+        { label: 'Empty state', on: s.emptyMode ? '1' : null, click: () => this.setState({ emptyMode: !s.emptyMode, route: 'dash', docId: null }) },
+        { label: 'No access', on: route === '404' ? '1' : null, click: () => this.go('404') },
+        { label: 'Sign out', on: null, click: this.signOut },
+        { label: 'Reset', on: null, click: () => this.setState({ docs: this.seed(), emptyMode: false, roleOverride: null, route: 'login', userId: null, docId: null, toasts: [] }) }
+      ],
+
+      userRows: this.USERS.map(u => ({
+        name: u.name, email: u.email, initials: u.initials, color: u.color,
+        busy: s.signingIn === u.id ? '1' : null, idle: s.signingIn === u.id ? null : '1',
+        click: () => this.signIn(u.id)
+      })),
+
+      myDocs: mine.map(row), sharedDocs: shared.map(row), recentRows: mine.concat(shared).map(row),
+      myCount: String(mine.length), sharedCount: String(shared.length),
+      totalLabel: mine.length + shared.length + ' documents',
+      noMyDocs: mine.length === 0, noSharedDocs: shared.length === 0,
+      hasAnyDoc: mine.length + shared.length > 0,
+      noDocsAtAll: mine.length + shared.length === 0,
+      drawerOpen: !!s.drawer, drawerAttr: s.drawer ? '1' : null,
+      meName: me.name, meEmail: me.email, meInitials: me.initials, meColor: me.color,
+      newDoc: this.newDoc, pickFile: this.pickFile, onFile: this.onFile, fileRef: this.fileRef,
+      uploading: !!s.uploading, notUploading: !s.uploading,
+      uploadLabel: s.uploading ? 'Uploading…' : 'Upload .txt / .md',
+      signOut: this.signOut, goDash: this.goDash, openDrawer: this.openDrawer, closeDrawer: this.closeDrawer,
+
+      docTitle: d ? d.title : '', docOwnerName: owner.name.split(' ')[0],
+      isOwner: role === 'owner', notOwner: role !== 'owner',
+      canEdit: role === 'owner' || role === 'edit',
+      viewOnly: role === 'view',
+      roleLabel: this.labelFor(role), rolePillBg: rp.bg, rolePillText: rp.text,
+      onTitle: this.onTitle, deleteDoc: this.deleteDoc, canvasRef: this.canvasRef, onInput: this.onInput, syncMarks: this.syncMarks,
+
+      h1On: s.block === 'h1' ? '1' : null, h2On: s.block === 'h2' ? '1' : null,
+      h3On: s.block === 'h3' ? '1' : null, pOn: s.block === 'p' ? '1' : null,
+      doH1: () => this.exec('formatBlock', 'H1'), doH2: () => this.exec('formatBlock', 'H2'),
+      doH3: () => this.exec('formatBlock', 'H3'), doP: () => this.exec('formatBlock', 'P'),
+      boldOn: s.marks.bold ? '1' : null, italicOn: s.marks.italic ? '1' : null, underlineOn: s.marks.underline ? '1' : null,
+      ulOn: s.marks.insertUnorderedList ? '1' : null, olOn: s.marks.insertOrderedList ? '1' : null,
+      doBold: () => this.exec('bold'), doItalic: () => this.exec('italic'), doUnderline: () => this.exec('underline'),
+      doUl: () => this.exec('insertUnorderedList'), doOl: () => this.exec('insertOrderedList'),
+      isSaving: s.save === 'saving', isSaved: s.save === 'saved', isFailed: s.save === 'error',
+
+      shareOpen: !!(s.shareOpen && d),
+      openShare: this.openShare, closeShare: this.closeShare, addCollab: this.addCollab,
+      backdropClick: this.closeShare, stop: (e) => e.stopPropagation(),
+      shareEmail: s.shareEmail, shareRole: s.shareRole,
+      shareError: s.shareError || null, noShareError: !s.shareError,
+      inputBorder: s.shareError ? '#e3a49e' : '#e4e7eb',
+      onShareEmail: (e) => this.setState({ shareEmail: e.target.value, shareError: '' }),
+      onShareRole: (e) => this.setState({ shareRole: e.target.value }),
+      onShareKey: (e) => { if (e.key === 'Enter') this.addCollab(); if (e.key === 'Escape') this.closeShare(); },
+      ownerName: d && d.owner === me.id ? me.name + ' (you)' : owner.name, ownerEmail: owner.email, ownerInitials: owner.initials, ownerColor: owner.color,
+      collabRows: (d ? d.collabs || [] : []).map(c => {
+        const u = this.u(c.id);
+        return { name: u.name, email: u.email, initials: u.initials, color: u.color, role: c.role, setRole: (e) => this.setCollabRole(c.id, e.target.value), remove: () => this.removeCollab(c.id) };
+      }),
+      noCollabs: !!(d && (d.collabs || []).length === 0),
+      demoEmails: this.USERS.filter(u => u.id !== me.id).map(u => u.email).join(', '),
+
+      toasts: s.toasts.map(t => ({ id: t.id, kind: t.kind, msg: t.msg, dismiss: () => this.dismiss(t.id) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

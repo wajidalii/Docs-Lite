@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "mcp__context7__resolve-library-id"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "context7",
+    "sequential-thinking",
+    "github",
+    "shopify-dev-mcp",
+    "postgres",
+    "clickup"
+  ]
+}

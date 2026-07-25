@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=Source+Serif+4:opsz,wght@8..60,400..600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #10131a; --text: #2a3038; --muted: #6e7681; --faint: #98a0ab;
+      --line: #e4e7eb; --line-soft: #eef0f3; --bg: #f7f8fa; --surface: #ffffff;
+      --accent: #5b5bd6; --accent-hover: #4a4ac2; --accent-tint: #f0f0fe; --accent-line: #d5d5f7;
+      --r-md: 8px; --r-lg: 12px;
+      --sh-sm: 0 1px 2px rgba(16,19,26,.05), 0 1px 1px rgba(16,19,26,.04);
+      --sh-md: 0 4px 14px rgba(16,19,26,.07), 0 1px 2px rgba(16,19,26,.05);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: "Instrument Sans", system-ui, sans-serif; font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-hover); text-decoration: underline; }
+    ::selection { background: #dededf; }
+    code, pre { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+    pre { margin: 0; white-space: pre; overflow-x: auto; }
+  </style>
+</helmet>
+
+<div style="max-width:1120px; margin:0 auto; padding:64px 40px 120px">
+
+  <header style="display:flex; align-items:flex-end; gap:24px; padding-bottom:28px; border-bottom:1px solid var(--line); margin-bottom:56px">
+    <div style="flex:1; min-width:0">
+      <div style="font-size:11px; font-weight:600; letter-spacing:0.09em; text-transform:uppercase; color:var(--faint); margin-bottom:14px">Brand kit · v2</div>
+      <h1 style="margin:0 0 10px; font-family:'Instrument Serif', Georgia, serif; font-weight:400; font-size:46px; line-height:1.05; letter-spacing:-0.015em; color:var(--ink)">DocsLite identity &amp; assets</h1>
+      <p style="margin:0; font-size:15px; color:var(--muted); max-width:62ch">Everything needed to ship the brand: the mark and lockup, favicon set, social card, the initials-avatar palette, and the empty-state motif. Free/open licences only — Instrument Sans, Instrument Serif, Source Serif 4 (SIL OFL) and Lucide (ISC).</p>
+    </div>
+    <div style="flex:none; display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm)">
+      <span style="width:34px; height:34px; border-radius:9px; background:var(--accent); display:grid; place-items:center; overflow:hidden">
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none"><path d="M9 12h11" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M9 17h25" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M9 22h8" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </span>
+      <span style="font-size:19px; font-weight:600; letter-spacing:-0.025em; color:var(--ink)">DocsLite</span>
+    </div>
+  </header>
+
+  <!-- MARK -->
+  <section style="margin-bottom:64px">
+    <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:6px">
+      <h2 style="margin:0; font-size:19px; font-weight:600; letter-spacing:-0.02em; color:var(--ink)">01 · The mark</h2>
+      <span style="font-size:13px; color:var(--faint)">Three rules in a soft-square tile — the middle rule runs off the right edge</span>
+    </div>
+    <p style="margin:0 0 24px; font-size:14px; color:var(--muted); max-width:70ch">The concept is “a page that moves.” Two contained rules read as a document; the middle one breaking the tile's padding reads as speed, and it is the one detail that survives all the way down to 16px. Never redraw the lines — scale the SVG.</p>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:28px; display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; align-items:center; gap:12px">
+          <span style="width:44px; height:44px; border-radius:12px; background:var(--accent); display:block; overflow:hidden">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M11 15.5h14" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M11 22h33" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M11 28.5h10" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>
+          </span>
+          <span style="font-size:25px; font-weight:600; letter-spacing:-0.03em; color:var(--ink)">DocsLite</span>
+        </div>
+        <div style="font-size:12px; color:var(--faint)">Primary lockup · light</div>
+      </div>
+      <div style="background:#10131a; border:1px solid #10131a; border-radius:var(--r-lg); padding:28px; display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; align-items:center; gap:12px">
+          <span style="width:44px; height:44px; border-radius:12px; background:#7b7bea; display:block; overflow:hidden">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><path d="M11 15.5h14" stroke="#10131a" stroke-width="3" stroke-linecap="round"/><path d="M11 22h33" stroke="#10131a" stroke-width="3" stroke-linecap="round"/><path d="M11 28.5h10" stroke="#10131a" stroke-width="3" stroke-linecap="round"/></svg>
+          </span>
+          <span style="font-size:25px; font-weight:600; letter-spacing:-0.03em; color:#f7f8fa">DocsLite</span>
+        </div>
+        <div style="font-size:12px; color:#6e7681">Primary lockup · dark (tile lifts to #7B7BEA)</div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:28px; display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; align-items:flex-end; gap:16px">
+          <span style="width:56px; height:56px; border-radius:15px; background:var(--accent); display:block; overflow:hidden">
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M14 20h18" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/><path d="M14 28h42" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/><path d="M14 36h13" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/></svg>
+          </span>
+          <span style="width:32px; height:32px; border-radius:9px; background:var(--accent); display:block; overflow:hidden">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M8 11.5h10" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M8 16h24" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M8 20.5h7" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </span>
+          <span style="width:16px; height:16px; border-radius:5px; background:var(--accent); display:block; overflow:hidden">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 5.6h5" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><path d="M4 8h12" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><path d="M4 10.4h3.4" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </span>
+        </div>
+        <div style="font-size:12px; color:var(--faint)">Icon-only at 56 / 32 / 16px · radius = 27% of the tile</div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; margin-top:16px">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:20px 22px">
+        <div style="font-size:12px; font-weight:600; color:var(--ink); margin-bottom:8px">Wordmark spec</div>
+        <div style="font-size:12.5px; color:var(--muted); line-height:1.7">Instrument Sans 600 · letter-spacing −0.025em · optical size ≥ 15px. Cap height of the wordmark equals 56% of the tile. Gap between tile and wordmark = 27% of tile width.</div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:20px 22px">
+        <div style="font-size:12px; font-weight:600; color:var(--ink); margin-bottom:8px">Clear space</div>
+        <div style="font-size:12.5px; color:var(--muted); line-height:1.7">Keep free space equal to half the tile height on all sides. Never place the lockup on a photo, a gradient, or any fill other than <code>--bg</code>, <code>--surface</code> or <code>--ink</code>.</div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:20px 22px">
+        <div style="font-size:12px; font-weight:600; color:var(--ink); margin-bottom:8px">Don't</div>
+        <div style="font-size:12.5px; color:var(--muted); line-height:1.7">No outline version, no gradient tile, no drop shadow on the mark, no rotation, no stacking the wordmark under the tile, no stroke weights other than 6.8% of tile size.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAVICON -->
+  <section style="margin-bottom:64px">
+    <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:6px">
+      <h2 style="margin:0; font-size:19px; font-weight:600; letter-spacing:-0.02em; color:var(--ink)">02 · App icon &amp; favicon set</h2>
+      <span style="font-size:13px; color:var(--faint)">One SVG source, five exports</span>
+    </div>
+    <p style="margin:0 0 24px; font-size:14px; color:var(--muted); max-width:70ch">At 16 and 32 the bottom rule is dropped — two rules only, so the glyph stays legible in a browser tab. The 180 apple-touch and 512 maskable both sit on the full-bleed iris tile with the safe-area inset shown.</p>
+    <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:32px; display:flex; align-items:flex-end; gap:44px; flex-wrap:wrap">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:12px">
+        <span style="width:16px; height:16px; border-radius:4px; background:var(--accent); display:block; overflow:hidden">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6h5.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M4 10h12" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </span>
+        <span style="font-size:11px; color:var(--faint)">16 · favicon</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:12px">
+        <span style="width:32px; height:32px; border-radius:8px; background:var(--accent); display:block; overflow:hidden">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M8 12h11" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M8 20h24" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>
+        </span>
+        <span style="font-size:11px; color:var(--faint)">32 · favicon</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:12px">
+        <span style="width:72px; height:72px; border-radius:16px; background:var(--accent); display:block; overflow:hidden">
+          <svg width="72" height="72" viewBox="0 0 72 72" fill="none"><path d="M18 26h23" stroke="#fff" stroke-width="4.9" stroke-linecap="round"/><path d="M18 36h54" stroke="#fff" stroke-width="4.9" stroke-linecap="round"/><path d="M18 46h17" stroke="#fff" stroke-width="4.9" stroke-linecap="round"/></svg>
+        </span>
+        <span style="font-size:11px; color:var(--faint)">180 · apple-touch</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:12px">
+        <span style="position:relative; width:104px; height:104px; border-radius:0; background:var(--accent); display:block; overflow:hidden">
+          <svg width="104" height="104" viewBox="0 0 104 104" fill="none" style="position:absolute; inset:0"><path d="M31 40h29" stroke="#fff" stroke-width="7" stroke-linecap="round"/><path d="M31 52h73" stroke="#fff" stroke-width="7" stroke-linecap="round"/><path d="M31 64h21" stroke="#fff" stroke-width="7" stroke-linecap="round"/></svg>
+          <span style="position:absolute; inset:11px; border:1px dashed rgba(255,255,255,.5); border-radius:50%"></span>
+        </span>
+        <span style="font-size:11px; color:var(--faint)">512 · maskable (80% safe area)</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px; padding-left:8px; border-left:1px solid var(--line-soft); padding-left:24px">
+        <div style="font-size:12px; font-weight:600; color:var(--ink)">Export list</div>
+        <div style="font-size:12.5px; color:var(--muted); line-height:1.8"><code>icon.svg</code> · source, 32×32 viewBox<br><code>favicon.ico</code> · 16 + 32<br><code>apple-touch-icon.png</code> · 180<br><code>icon-512-maskable.png</code> · 512, full-bleed<br><code>icon-mono.svg</code> · single-colour, for dark UI</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OG IMAGE -->
+  <section style="margin-bottom:64px">
+    <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:6px">
+      <h2 style="margin:0; font-size:19px; font-weight:600; letter-spacing:-0.02em; color:var(--ink)">03 · Open Graph card</h2>
+      <span style="font-size:13px; color:var(--faint)">1200 × 630 · shown at 50%</span>
+    </div>
+    <p style="margin:0 0 24px; font-size:14px; color:var(--muted); max-width:70ch">Serif headline, one iris rule, and a hint of the writing surface bleeding off the right edge. No screenshots, no device frames — link previews are read at thumbnail size.</p>
+    <div style="width:600px; max-width:100%; height:315px; overflow:hidden; border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-md)">
+      <div style="width:1200px; height:630px; transform:scale(.5); transform-origin:top left; background:#f7f8fa; background-image:radial-gradient(80% 60% at 88% 8%, #f0f0fe 0%, rgba(247,248,250,0) 70%); position:relative; overflow:hidden; padding:78px 84px; display:flex; flex-direction:column">
+        <div style="display:flex; align-items:center; gap:18px">
+          <span style="width:56px; height:56px; border-radius:15px; background:#5b5bd6; display:block; overflow:hidden">
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><path d="M14 20h18" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/><path d="M14 28h42" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/><path d="M14 36h13" stroke="#fff" stroke-width="3.6" stroke-linecap="round"/></svg>
+          </span>
+          <span style="font-size:34px; font-weight:600; letter-spacing:-0.03em; color:#10131a">DocsLite</span>
+        </div>
+        <div style="margin-top:auto; max-width:760px">
+          <div style="width:64px; height:4px; border-radius:2px; background:#5b5bd6; margin-bottom:34px"></div>
+          <div style="font-family:'Instrument Serif', Georgia, serif; font-weight:400; font-size:82px; line-height:1.02; letter-spacing:-0.02em; color:#10131a">Write it. Share it.<br>Nothing in the way.</div>
+          <div style="margin-top:26px; font-size:26px; color:#6e7681">A fast, focused editor for documents your team actually shares.</div>
+        </div>
+        <div style="position:absolute; right:-84px; top:176px; width:392px; height:404px; background:#fff; border:1px solid #e4e7eb; border-radius:16px; box-shadow:0 24px 60px rgba(16,19,26,.10); padding:44px 44px; display:flex; flex-direction:column; gap:20px; transform:rotate(3deg)">
+          <div style="font-family:'Source Serif 4', Georgia, serif; font-size:34px; font-weight:600; color:#10131a">Q3 Review</div>
+          <div style="height:8px; border-radius:4px; background:#eef0f3; width:100%"></div>
+          <div style="height:8px; border-radius:4px; background:#eef0f3; width:92%"></div>
+          <div style="height:8px; border-radius:4px; background:#eef0f3; width:74%"></div>
+          <div style="height:8px; border-radius:4px; background:#f0f0fe; width:44%"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AVATARS -->
+  <section style="margin-bottom:64px">
+    <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:6px">
+      <h2 style="margin:0; font-size:19px; font-weight:600; letter-spacing:-0.02em; color:var(--ink)">04 · Initials avatars</h2>
+      <span style="font-size:13px; color:var(--faint)">Six fills, all ≥ 4.5:1 against white text</span>
+    </div>
+    <p style="margin:0 0 24px; font-size:14px; color:var(--muted); max-width:70ch">Squircle tiles (radius 27%), Instrument Sans 600, two initials, letter-spacing 0.02em. Assign deterministically: sum the char codes of the user id, modulo 6 — the same person always gets the same colour, and colour is never the only signal (name and email always sit beside it).</p>
+    <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:28px">
+      <div style="display:flex; gap:28px; flex-wrap:wrap">
+        <sc-for list="{{ avatars }}" as="av" hint-placeholder-count="6">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px">
+            <span style="width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-size:14px; font-weight:600; letter-spacing:0.02em; color:#fff; background:{{ av.hex }}">{{ av.initials }}</span>
+            <span style="font-size:11.5px; font-family:ui-monospace, monospace; color:var(--muted)">{{ av.hex }}</span>
+            <span style="font-size:11px; color:var(--faint)">{{ av.ratio }}</span>
+          </div>
+        </sc-for>
+        <div style="display:flex; align-items:flex-start; gap:16px; padding-left:28px; border-left:1px solid var(--line-soft)">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px">
+            <span style="width:30px; height:30px; border-radius:8px; display:grid; place-items:center; font-size:11px; font-weight:600; color:#fff; background:#4f4fc9">AR</span>
+            <span style="font-size:11px; color:var(--faint)">30 · row</span>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px">
+            <span style="width:36px; height:36px; border-radius:10px; display:grid; place-items:center; font-size:12.5px; font-weight:600; color:#fff; background:#4f4fc9">AR</span>
+            <span style="font-size:11px; color:var(--faint)">36 · list</span>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px">
+            <span style="width:64px; height:64px; border-radius:17px; display:grid; place-items:center; font-size:21px; font-weight:600; color:#fff; background:#4f4fc9">AR</span>
+            <span style="font-size:11px; color:var(--faint)">64 · profile</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOTIF -->
+  <section>
+    <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:6px">
+      <h2 style="margin:0; font-size:19px; font-weight:600; letter-spacing:-0.02em; color:var(--ink)">05 · Empty-state motif &amp; iconography</h2>
+      <span style="font-size:13px; color:var(--faint)">Built from real UI parts — no illustration library</span>
+    </div>
+    <p style="margin:0 0 24px; font-size:14px; color:var(--muted); max-width:70ch">Three stacked document cards, the front one tinted iris with three rules — the same three-rule idea as the mark. Rotations are fixed at −7° / +6° / 0°. Icons throughout are Lucide at 1.6–1.85 stroke, 15–18px in chrome, never filled.</p>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:36px; display:flex; flex-direction:column; align-items:center; gap:20px">
+        <div style="position:relative; width:120px; height:96px">
+          <span style="position:absolute; left:16px; top:8px; width:76px; height:80px; background:var(--surface); border:1px solid var(--line); border-radius:10px; transform:rotate(-7deg); box-shadow:var(--sh-sm)"></span>
+          <span style="position:absolute; left:30px; top:6px; width:76px; height:80px; background:var(--surface); border:1px solid var(--line-soft); border-radius:10px; transform:rotate(6deg); box-shadow:var(--sh-sm)"></span>
+          <span style="position:absolute; left:24px; top:16px; width:76px; height:80px; background:var(--accent-tint); border:1px solid var(--accent-line); border-radius:10px; display:flex; flex-direction:column; gap:7px; padding:16px 14px">
+            <span style="height:4px; border-radius:2px; background:#c9c9f4; width:80%"></span>
+            <span style="height:4px; border-radius:2px; background:#dcdcf9; width:100%"></span>
+            <span style="height:4px; border-radius:2px; background:#dcdcf9; width:65%"></span>
+          </span>
+        </div>
+        <div style="font-size:12px; color:var(--faint)">Empty dashboard · 120 × 96</div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:36px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px">
+        <div style="display:flex; gap:18px; color:var(--muted)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v5h6"></path><path d="M8 13h8"></path><path d="M8 17h5"></path></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><path d="m16 6-4-4-4 4"></path><path d="M12 2v13"></path></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </div>
+        <div style="font-size:12px; color:var(--faint)">Lucide · file-text, upload, eye, check, trash-2</div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--sh-sm); padding:28px 26px">
+        <div style="font-size:12px; font-weight:600; color:var(--ink); margin-bottom:10px">Loading</div>
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px">
+          <span style="width:16px; height:16px; border:2px solid var(--accent-line); border-top-color:var(--accent); border-radius:50%; display:block"></span>
+          <span style="width:13px; height:13px; border:2px solid var(--line); border-top-color:var(--muted); border-radius:50%; display:block"></span>
+          <span style="font-size:12.5px; color:var(--muted)">720ms linear, infinite</span>
+        </div>
+        <div style="font-size:12.5px; color:var(--muted); line-height:1.7">Skeletons use <code>--line-soft</code> blocks at the real content's height and radius — never a shimmer sweep.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      avatars: [
+        { hex: '#4f4fc9', initials: 'AR', ratio: '7.1:1' },
+        { hex: '#0f766e', initials: 'BO', ratio: '5.1:1' },
+        { hex: '#b45309', initials: 'ML', ratio: '4.6:1' },
+        { hex: '#9333a8', initials: 'TV', ratio: '5.9:1' },
+        { hex: '#1d4ed8', initials: 'JK', ratio: '6.5:1' },
+        { hex: '#166534', initials: 'SP', ratio: '6.4:1' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

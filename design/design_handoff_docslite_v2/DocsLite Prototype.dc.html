@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="_ds/modernist-8cdcca7e-4111-4da3-b3e2-a78391cf39a2/styles.css">
+  <style>
+    a { color: var(--color-accent-700); }
+    a:hover { color: var(--color-accent); }
+    .tag { white-space: nowrap; }
+    @keyframes dl-spin { to { transform: rotate(360deg) } }
+    @keyframes dl-toast { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+    @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important } }
+
+    /* document typography — the .ProseMirror surface */
+    [data-canvas] { outline: none; font-size: 17px; line-height: 1.72; }
+    [data-canvas] > :first-child { margin-top: 0 !important; }
+    [data-canvas] h1 { font-family: var(--font-heading); font-weight: 800; font-size: 36px; line-height: 1.1; letter-spacing: -0.022em; margin: 34px 0 14px; }
+    [data-canvas] h2 { font-family: var(--font-heading); font-weight: 800; font-size: 26px; line-height: 1.15; letter-spacing: -0.018em; margin: 30px 0 10px; }
+    [data-canvas] h3 { font-family: var(--font-heading); font-weight: 800; font-size: 19px; line-height: 1.25; letter-spacing: 0.01em; text-transform: uppercase; margin: 26px 0 8px; }
+    [data-canvas] p { margin: 0 0 18px; }
+    [data-canvas] ul, [data-canvas] ol { margin: 0 0 18px; padding-left: 24px; }
+    [data-canvas] li { margin-bottom: 7px; }
+    [data-canvas] li::marker { color: var(--color-accent); font-weight: 800; }
+    [data-canvas] strong { font-weight: 800; }
+    [data-canvas] em { font-style: italic; }
+    [data-canvas][data-empty]::before { content: attr(data-placeholder); color: color-mix(in srgb, var(--color-text) 40%, transparent); }
+
+    /* stateful bits that inline styles cannot express */
+    [data-row-active] { background: var(--color-neutral-100) !important; border-left-color: var(--color-accent) !important; }
+    [data-tool-on] { background: var(--color-accent) !important; color: var(--color-bg) !important; }
+    [data-seg-on] { background: var(--color-accent) !important; color: var(--color-bg) !important; border-color: var(--color-accent) !important; }
+    [data-toast="error"] { background: var(--color-accent) !important; color: var(--color-bg) !important; }
+
+    /* ── tablet 640–1023 ── */
+    @container app (max-width: 1023px) {
+      [data-sidebar] { width: 216px !important; }
+      [data-poster] { padding: 32px 28px !important; }
+      [data-poster] [data-statement] { font-size: 34px !important; }
+      [data-signin] { padding: 32px 28px !important; }
+      [data-sheet] { padding: 40px 40px 72px !important; }
+      [data-work] { padding: 28px 24px !important; }
+    }
+    /* ── mobile <640 ── */
+    @container app (max-width: 639px) {
+      [data-mtop] { display: flex !important; }
+      [data-sidebar] { position: absolute !important; z-index: 30; top: 0; bottom: 0; left: 0; width: 284px !important;
+        transform: translateX(-101%); transition: transform 180ms ease; box-shadow: var(--shadow-lg); }
+      [data-sidebar][data-open] { transform: none; }
+      [data-login] { grid-template-columns: 1fr !important; grid-template-rows: auto 1fr !important; }
+      [data-poster] { padding: 28px 20px !important; }
+      [data-poster] [data-statement] { font-size: 30px !important; }
+      [data-poster] [data-poster-foot] { display: none !important; }
+      [data-signin] { padding: 24px 20px !important; }
+      [data-sheet] { padding: 26px 22px 64px !important; box-shadow: none !important; }
+      [data-canvas] { font-size: 16px; }
+      [data-canvas] h1 { font-size: 28px; }
+      [data-canvas] h2 { font-size: 22px; }
+      [data-work] { padding: 20px 16px !important; }
+      [data-tool] { min-width: 44px !important; min-height: 44px !important; }
+      [data-row] { min-height: 52px !important; }
+      [data-dialog-wrap] { align-items: flex-end !important; padding: 0 !important; }
+      [data-dialog] { width: 100% !important; max-width: none !important; max-height: 92% !important; padding: 20px 18px 26px !important; }
+      [data-share-form] { flex-direction: column !important; align-items: stretch !important; }
+      [data-share-form] > * { width: 100% !important; }
+      [data-editor-head] { flex-wrap: wrap !important; }
+      [data-hide-mobile] { display: none !important; }
+      [data-table-wrap] { overflow-x: auto; }
+    }
+  </style>
+</helmet>
+
+<div style="display:flex; flex-direction:column; height:100vh; min-height:0; background:var(--color-neutral-300); font-family:var(--font-body)">
+
+  <sc-if value="{{ showBar }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:none; display:flex; align-items:center; gap:18px; flex-wrap:wrap; padding:0 16px; min-height:46px; background:var(--color-text); color:var(--color-neutral-100); border-bottom:2px solid var(--color-accent)">
+      <div style="display:flex; align-items:center; gap:8px; margin-right:auto">
+        <div style="width:12px; height:12px; background:var(--color-accent)"></div>
+        <span style="font-family:var(--font-heading); font-weight:800; font-size:11px; letter-spacing:0.14em">DOCSLITE — PROTOTYPE</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px">
+        <span style="font-size:10px; letter-spacing:0.12em; opacity:0.5">VIEWPORT</span>
+        <div style="display:flex">
+          <sc-for list="{{ vpOptions }}" as="o" hint-placeholder-count="3">
+            <button type="button" onClick="{{ o.click }}" data-seg-on="{{ o.on }}" style="font-family:var(--font-heading); font-weight:800; font-size:10px; letter-spacing:0.1em; padding:6px 9px; white-space:nowrap; color:inherit; background:transparent; border:1px solid color-mix(in srgb, #f8f4f4 30%, transparent); margin-left:-1px; cursor:pointer">{{ o.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px">
+        <span style="font-size:10px; letter-spacing:0.12em; opacity:0.5">YOUR ROLE</span>
+        <div style="display:flex">
+          <sc-for list="{{ roleOptions }}" as="o" hint-placeholder-count="3">
+            <button type="button" onClick="{{ o.click }}" data-seg-on="{{ o.on }}" style="font-family:var(--font-heading); font-weight:800; font-size:10px; letter-spacing:0.1em; padding:6px 9px; white-space:nowrap; color:inherit; background:transparent; border:1px solid color-mix(in srgb, #f8f4f4 30%, transparent); margin-left:-1px; cursor:pointer">{{ o.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px">
+        <sc-for list="{{ jumpOptions }}" as="o" hint-placeholder-count="4">
+          <button type="button" onClick="{{ o.click }}" data-seg-on="{{ o.on }}" style="font-family:var(--font-heading); font-weight:800; font-size:10px; letter-spacing:0.1em; padding:6px 9px; white-space:nowrap; color:inherit; background:transparent; border:1px solid color-mix(in srgb, #f8f4f4 30%, transparent); cursor:pointer">{{ o.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="flex:1; min-height:0; display:flex; justify-content:center; align-items:stretch; padding:0">
+    <div style="position:relative; overflow:hidden; container-type:inline-size; container-name:app; height:100%; background:var(--color-bg); width:100%; max-width:{{ frameMax }}; box-shadow:var(--shadow-lg)">
+
+      <!-- ══ LOGIN ══ -->
+      <sc-if value="{{ atLogin }}" hint-placeholder-val="{{ true }}">
+        <div data-login="1" style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); height:100%; min-height:0">
+          <div data-poster="1" style="background:var(--color-accent); color:var(--color-bg); padding:44px 40px; display:flex; flex-direction:column; gap:24px; min-height:0">
+            <div style="display:flex; align-items:center; gap:10px">
+              <div style="width:22px; height:22px; background:var(--color-bg); display:flex; flex-direction:column; justify-content:center; gap:3px; padding:0 4px">
+                <div style="height:2px; background:var(--color-accent)"></div>
+                <div style="height:2px; background:var(--color-accent)"></div>
+                <div style="height:2px; background:var(--color-accent); width:60%"></div>
+              </div>
+              <span style="font-family:var(--font-heading); font-weight:800; font-size:17px; letter-spacing:0.02em">DOCSLITE</span>
+            </div>
+            <div data-statement="1" style="font-family:var(--font-heading); font-weight:800; font-size:44px; line-height:1.02; letter-spacing:-0.03em; margin-top:auto">A document, and nothing in the way.</div>
+            <div style="font-size:14px; line-height:1.5; max-width:34ch; opacity:0.92">Write, format and share in one plain surface. No panels to learn.</div>
+            <div data-poster-foot="1" style="margin-top:auto; border-top:2px solid var(--color-bg); padding-top:12px; font-family:var(--font-heading); font-weight:800; font-size:10px; letter-spacing:0.14em">DEMO WORKSPACE · NO PASSWORD REQUIRED</div>
+          </div>
+          <div data-signin="1" style="padding:44px 40px; display:flex; flex-direction:column; justify-content:center; gap:6px; overflow:auto; min-height:0">
+            <h4 style="margin:0">Pick a user to continue</h4>
+            <p class="text-muted" style="font-size:13px; margin:0 0 14px">This is a demo sign-in — choose an account to see the workspace from their side.</p>
+            <div style="display:flex; flex-direction:column; border-top:2px solid var(--color-divider)">
+              <sc-for list="{{ userRows }}" as="u" hint-placeholder-count="4">
+                <button type="button" data-row="1" onClick="{{ u.click }}" style="display:flex; align-items:center; gap:14px; width:100%; min-height:64px; padding:12px 8px; background:transparent; border:0; border-bottom:1px solid var(--color-divider); text-align:left; cursor:pointer; font:inherit; color:var(--color-text)" style-hover="background:color-mix(in srgb, var(--color-text) 6%, transparent)">
+                  <span style="width:40px; height:40px; flex:none; display:grid; place-items:center; font-family:var(--font-heading); font-weight:800; font-size:13px; letter-spacing:0.04em; color:var(--color-neutral-100); background:{{ u.color }}">{{ u.initials }}</span>
+                  <span style="display:flex; flex-direction:column; gap:1px; min-width:0">
+                    <span style="font-family:var(--font-heading); font-weight:800; font-size:15px">{{ u.name }}</span>
+                    <span class="text-muted" style="font-size:12px">{{ u.email }}</span>
+                  </span>
+                  <span style="margin-left:auto; display:flex; align-items:center; color:var(--color-accent)">
+                    <sc-if value="{{ u.busy }}" hint-placeholder-val="{{ false }}">
+                      <span style="width:16px; height:16px; border:2px solid currentColor; border-right-color:transparent; animation:dl-spin 700ms linear infinite"></span>
+                    </sc-if>
+                    <sc-if value="{{ u.idle }}" hint-placeholder-val="{{ true }}">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </sc-if>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ DASHBOARD ══ -->
+      <sc-if value="{{ atDash }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; height:100%; min-height:0">
+          <header data-mtop="1" style="display:none; flex:none; align-items:center; gap:12px; padding:8px 12px; min-height:56px; border-bottom:2px solid var(--color-divider); background:var(--color-neutral-100)">
+            <button type="button" class="btn btn-secondary btn-icon" onClick="{{ openDrawer }}" aria-label="Open navigation" style="min-width:44px; min-height:44px">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+            </button>
+            <span style="font-family:var(--font-heading); font-weight:800; font-size:15px; letter-spacing:0.02em">DOCSLITE</span>
+            <button type="button" class="btn btn-primary" onClick="{{ newDoc }}" style="margin-left:auto; min-height:44px">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>New
+            </button>
+          </header>
+
+          <div style="flex:1; min-height:0; display:flex; position:relative">
+            <aside data-sidebar="1" style="flex:none; width:272px; display:flex; flex-direction:column; min-height:0; background:var(--color-neutral-200); border-right:2px solid var(--color-divider)">
+              <div style="flex:none; display:flex; align-items:center; gap:10px; padding:18px 16px 14px">
+                <div style="width:20px; height:20px; background:var(--color-accent); display:flex; flex-direction:column; justify-content:center; gap:2.5px; padding:0 4px">
+                  <div style="height:2px; background:var(--color-bg)"></div>
+                  <div style="height:2px; background:var(--color-bg)"></div>
+                  <div style="height:2px; background:var(--color-bg); width:60%"></div>
+                </div>
+                <span style="font-family:var(--font-heading); font-weight:800; font-size:16px; letter-spacing:0.02em">DOCSLITE</span>
+                <button type="button" class="btn btn-secondary btn-icon" data-hide-mobile="1" onClick="{{ closeDrawer }}" aria-label="Close navigation" style="margin-left:auto; display:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+              </div>
+              <div style="flex:none; display:flex; flex-direction:column; gap:8px; padding:0 16px 16px">
+                <button type="button" class="btn btn-primary" onClick="{{ newDoc }}" style="justify-content:flex-start; min-height:40px; gap:8px">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>New document
+                </button>
+                <button type="button" class="btn btn-secondary" onClick="{{ pickFile }}" style="justify-content:flex-start; min-height:40px; gap:8px">
+                  <sc-if value="{{ uploading }}" hint-placeholder-val="{{ false }}">
+                    <span style="width:15px; height:15px; border:2px solid currentColor; border-right-color:transparent; animation:dl-spin 700ms linear infinite"></span>
+                  </sc-if>
+                  <sc-if value="{{ notUploading }}" hint-placeholder-val="{{ true }}">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+                  </sc-if>{{ uploadLabel }}
+                </button>
+                <input type="file" accept=".txt,.md" ref="{{ fileRef }}" onChange="{{ onFile }}" style="display:none">
+              </div>
+
+              <div style="flex:1; min-height:0; overflow:auto; padding-bottom:8px">
+                <div style="display:flex; align-items:center; gap:8px; padding:10px 16px 6px; border-top:2px solid var(--color-divider)">
+                  <span style="font-family:var(--font-heading); font-weight:800; font-size:10px; letter-spacing:0.12em; color:color-mix(in srgb, var(--color-text) 62%, transparent)">MY DOCUMENTS</span>
+                  <span style="margin-left:auto; font-size:11px; color:color-mix(in srgb, var(--color-text) 45%, transparent)">{{ myCount }}</span>
+                </div>
+                <sc-for list="{{ myDocs }}" as="d" hint-placeholder-count="4">
+                  <button type="button" data-row="1" data-row-active="{{ d.active }}" onClick="{{ d.open }}" style="display:flex; align-items:center; gap:10px; width:100%; min-height:42px; padding:8px 16px 8px 14px; background:transparent; border:0; border-left:2px solid transparent; text-align:left; cursor:pointer; font:inherit; color:var(--color-text)" style-hover="background:color-mix(in srgb, var(--color-text) 6%, transparent)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none; opacity:0.55"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v5h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>
+                    <span style="display:flex; flex-direction:column; gap:1px; min-width:0; flex:1">
+                      <span style="font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ d.title }}</span>
+                      <span style="font-size:11px; color:color-mix(in srgb, var(--color-text) 50%, transparent)">{{ d.updated }}</span>
+                    </span>
+                  </button>
+                </sc-for>
+                <sc-if value="{{ noMyDocs }}" hint-placeholder-val="{{ false }}">
+                  <p class="text-muted" style="font-size:12px; padding:2px 16px 12px; margin:0">No documents yet — create one or upload a .txt/.md.</p>
+                </sc-if>
+
+                <div style="display:flex; align-items:center; gap:8px; padding:10px 16px 6px; margin-top:8px; border-top:2px solid var(--color-divider)">
+                  <span style="font-family:var(--font-heading); font-weight:800; font-size:10px; letter-spacing:0.12em; color:color-mix(in srgb, var(--color-text) 62%, transparent)">SHARED WITH ME</span>
+                  <span style="margin-left:auto; font-size:11px; color:color-mix(in srgb, var(--color-text) 45%, transparent)">{{ sharedCount }}</span>
+                </div>
+                <sc-for list="{{ sharedDocs }}" as="d" hint-placeholder-count="2">
+                  <button type="button" data-row="1" data-row-active="{{ d.active }}" onClick="{{ d.open }}" style="display:flex; align-items:center; gap:10px; width:100%; min-height:42px; padding:8px 16px 8px 14px; background:transparent; border:0; border-left:2px solid transparent; text-align:left; cursor:pointer; font:inherit; color:var(--color-text)" style-hover="background:color-mix(in srgb, var(--color-text) 6%, transparent)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none; opacity:0.55"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v5h6"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>
+                    <span style="display:flex; flex-direction:column; gap:2px; min-width:0; flex:1">
+                      <span style="font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ d.title }}</span>
+                      <span style="display:flex; align-items:center; gap:6px; font-size:11px; color:color-mix(in srgb, var(--color-text) 50%, transparent)">{{ d.owner }} · <span class="tag {{ d.tagClass }}" style="font-size:10px; padding:1px 6px">{{ d.role }}</span></span>
+                    </span>
+                  </button>
+                </sc-for>
+                <sc-if value="{{ noSharedDocs }}" hint-placeholder-val="{{ false }}">
+                  <p class="text-muted" style="font-size:12px; padding:2px 16px 12px; margin:0">Nothing shared with you yet.</p>
+                </sc-if>
+              </div>
+
+              <div style="flex:none; display:flex; align-items:center; gap:10px; padding:12px 16px; border-top:2px solid var(--color-divider)">
+                <span style="width:32px; height:32px; flex:none; display:grid; place-items:center; font-family:var(--font-heading); font-weight:800; font-size:11px; color:var(--color-neutral-100); background:{{ meColor }}">{{ meInitials }}</span>
+                <span style="display:flex; flex-direction:column; min-width:0; flex:1">
+                  <span style="font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ meName }}</span>
+                  <span style="font-size:11px; color:color-mix(in srgb, var(--color-text) 50%, transparent); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ meEmail }}</span>
+                </span>
+                <button type="button" class="btn btn-secondary btn-icon" onClick="{{ signOut }}" title="Switch user" aria-label="Switch user">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+                </button>
+              </div>
+            </aside>
+
+            <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+              <div onClick="{{ closeDrawer }}" style="position:absolute; inset:0; z-index:20; background:color-mix(in srgb, var(--color-neutral-900) 45%, transparent)"></div>
+            </sc-if>
+
+            <main data-work="1" style="flex:1; min-width:0; overflow:auto; padding:36px 40px">
+              <sc-if value="{{ hasAnyDoc }}" hint-placeholder-val="{{ true }}">
+                <div style="max-width:900px">
+                  <div style="display:flex; align-items:flex-end; gap:12px; border-bottom:2px solid var(--color-divider); padding-bottom:12px; margin-bottom:4px">
+                    <h3 style="margin:0">Documents</h3>
+                    <span class="text-muted" style="font-size:12px; margin-bottom:4px">{{ totalLabel }}</span>
+                  </div>
+                  <div data-table-wrap>
+                    <table class="table">
+                      <thead>
+                        <tr><th style="width:52%">Title</th><th>Owner</th><th>Access</th><th style="text-align:right">Updated</th></tr>
+                      </thead>
+                      <tbody>
+                        <sc-for list="{{ recentRows }}" as="r" hint-placeholder-count="5">
+                          <tr onClick="{{ r.open }}" style="cursor:pointer">
+                            <td style="font-weight:600">{{ r.title }}</td>
+                            <td class="text-muted" style="font-size:13px">{{ r.owner }}</td>
+                            <td><span class="tag {{ r.tagClass }}">{{ r.role }}</span></td>
+                            <td class="text-muted" style="font-size:13px; text-align:right; white-space:nowrap">{{ r.updated }}</td>
+                          </tr>
+                        </sc-for>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="text-muted" style="font-size:12px; margin-top:16px">Select a document to open it, or start a new one.</p>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ noDocsAtAll }}" hint-placeholder-val="{{ false }}">
+                <div style="max-width:560px; margin:6vh 0 0">
+                  <div style="display:grid; grid-template-columns:repeat(4, 34px); grid-template-rows:repeat(3, 34px); border-top:2px solid var(--color-divider); border-left:2px solid var(--color-divider); width:max-content; margin-bottom:28px">
+                    <div style="border-right:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)"></div>
+                    <div style="border-right:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider); background:var(--color-accent)"></div>
+                    <div style="border-right:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)"></div>
+                    <div style="border-right:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)"></div>
+                    <div style="border-right:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)"></div>
+                    <div style="border-right:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)"></div>
+                    <div style="border-right:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)"></div>
+                    <div style="border-right:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)"></div>
+                    <div style="border-right:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)"></div>
+                    <div style="border-right:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)"></div>
+                    <div style="border-right:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)"></div>
+                    <div style="border-right:2px solid var(--color-divider); border-bottom:2px solid var(--color-divider)"></div>
+                  </div>
+                  <h3 style="margin:0 0 8px">No documents yet</h3>
+                  <p class="text-muted" style="font-size:14px; max-width:44ch">Create one, or upload a .txt/.md file and we'll turn it into a document you can edit.</p>
+                  <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:18px">
+                    <button type="button" class="btn btn-primary" onClick="{{ newDoc }}" style="min-height:40px; gap:8px">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>New document
+                    </button>
+                    <button type="button" class="btn btn-secondary" onClick="{{ pickFile }}" style="min-height:40px; gap:8px">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>Upload .txt / .md
+                    </button>
+                  </div>
+                </div>
+              </sc-if>
+            </main>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ EDITOR ══ -->
+      <sc-if value="{{ atDoc }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; height:100%; min-height:0">
+          <header data-editor-head="1" style="flex:none; display:flex; align-items:center; gap:12px; padding:10px 16px; min-height:56px; background:var(--color-neutral-100); border-bottom:2px solid var(--color-divider)">
+            <button type="button" class="btn btn-secondary btn-icon" onClick="{{ goDash }}" title="Back to documents" aria-label="Back to documents">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+            </button>
+            <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ true }}">
+              <input value="{{ docTitle }}" onChange="{{ onTitle }}" aria-label="Document title" placeholder="Untitled document" style="flex:1; min-width:0; font-family:var(--font-heading); font-weight:800; font-size:17px; letter-spacing:-0.01em; color:var(--color-text); background:transparent; border:0; border-bottom:2px solid transparent; padding:4px 2px" style-hover="border-bottom-color:var(--color-divider)" style-focus="border-bottom-color:var(--color-accent); outline:none">
+            </sc-if>
+            <sc-if value="{{ notOwner }}" hint-placeholder-val="{{ false }}">
+              <span style="flex:1; min-width:0; font-family:var(--font-heading); font-weight:800; font-size:17px; letter-spacing:-0.01em; padding:4px 2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ docTitle }}</span>
+            </sc-if>
+            <span class="tag {{ roleTagClass }}" style="flex:none; display:inline-flex; align-items:center; gap:5px">{{ roleLabel }}</span>
+            <sc-if value="{{ isOwner }}" hint-placeholder-val="{{ true }}">
+              <button type="button" class="btn btn-primary" onClick="{{ openShare }}" style="flex:none; gap:7px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>Share
+              </button>
+              <button type="button" class="btn btn-secondary btn-icon" onClick="{{ deleteDoc }}" title="Delete document" aria-label="Delete document" style="flex:none; color:var(--color-accent-700)" style-hover="background:var(--color-accent-100); border-color:var(--color-accent)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </sc-if>
+          </header>
+
+          <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:none; display:flex; align-items:center; gap:3px; padding:7px 16px; min-height:50px; background:var(--color-neutral-100); border-bottom:2px solid var(--color-divider); overflow-x:auto">
+              <button type="button" data-tool="1" data-tool-on="{{ h1On }}" onClick="{{ doH1 }}" title="Heading 1" style="flex:none; min-width:34px; height:34px; padding:0 9px; display:inline-flex; align-items:center; justify-content:center; font-family:var(--font-heading); font-weight:800; font-size:12px; letter-spacing:0.04em; color:var(--color-text); background:transparent; border:1px solid transparent; cursor:pointer" style-hover="background:color-mix(in srgb, var(--color-text) 8%, transparent)">H1</button>
+              <button type="button" data-tool="1" data-tool-on="{{ h2On }}" onClick="{{ doH2 }}" title="Heading 2" style="flex:none; min-width:34px; height:34px; padding:0 9px; display:inline-flex; align-items:center; justify-content:center; font-family:var(--font-heading); font-weight:800; font-size:12px; letter-spacing:0.04em; color:var(--color-text); background:transparent; border:1px solid transparent; cursor:pointer" style-hover="background:color-mix(in srgb, var(--color-text) 8%, transparent)">H2</button>
+              <button type="button" data-tool="1" data-tool-on="{{ h3On }}" onClick="{{ doH3 }}" title="Heading 3" style="flex:none; min-width:34px; height:34px; padding:0 9px; display:inline-flex; align-items:center; justify-content:center; font-family:var(--font-heading); font-weight:800; font-size:12px; letter-spacing:0.04em; color:var(--color-text); background:transparent; border:1px solid transparent; cursor:pointer" style-hover="background:color-mix(in srgb, var(--color-text) 8%, transparent)">H3</button>
+              <button type="button" data-tool="1" data-tool-on="{{ pOn }}" onClick="{{ doP }}" title="Paragraph" style="flex:none; min-width:34px; height:34px; padding:0 9px; display:inline-flex; align-items:center; justify-content:center; font-family:var(--font-heading); font-weight:800; font-size:12px; letter-spacing:0.04em; color:var(--color-text); background:transparent; border:1px solid transparent; cursor:pointer" style-hover="background:color-mix(in srgb, var(--color-text) 8%, transparent)">P</button>
+              <span style="flex:none; width:1px; height:22px; background:var(--color-divider); margin:0 7px"></span>
+              <button type="button" data-tool="1" data-tool-on="{{ boldOn }}" onClick="{{ doBold }}" title="Bold" aria-label="Bold" style="flex:none; min-width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-text); background:transparent; border:1px solid transparent; cursor:pointer" style-hover="background:color-mix(in srgb, var(--color-text) 8%, transparent)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h8a4 4 0 0 1 0 8H6z"/><path d="M6 12h9a4 4 0 0 1 0 8H6z"/></svg>
+              </button>
+              <button type="button" data-tool="1" data-tool-on="{{ italicOn }}" onClick="{{ doItalic }}" title="Italic" aria-label="Italic" style="flex:none; min-width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-text); background:transparent; border:1px solid transparent; cursor:pointer" style-hover="background:color-mix(in srgb, var(--color-text) 8%, transparent)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 4h-9"/><path d="M14 20H5"/><path d="M15 4 9 20"/></svg>
+              </button>
+              <button type="button" data-tool="1" data-tool-on="{{ underlineOn }}" onClick="{{ doUnderline }}" title="Underline" aria-label="Underline" style="flex:none; min-width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-text); background:transparent; border:1px solid transparent; cursor:pointer" style-hover="background:color-mix(in srgb, var(--color-text) 8%, transparent)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><path d="M4 20h16"/></svg>
+              </button>
+              <span style="flex:none; width:1px; height:22px; background:var(--color-divider); margin:0 7px"></span>
+              <button type="button" data-tool="1" data-tool-on="{{ ulOn }}" onClick="{{ doUl }}" title="Bulleted list" aria-label="Bulleted list" style="flex:none; min-width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-text); background:transparent; border:1px solid transparent; cursor:pointer" style-hover="background:color-mix(in srgb, var(--color-text) 8%, transparent)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3.5 6h.01"/><path d="M3.5 12h.01"/><path d="M3.5 18h.01"/></svg>
+              </button>
+              <button type="button" data-tool="1" data-tool-on="{{ olOn }}" onClick="{{ doOl }}" title="Numbered list" aria-label="Numbered list" style="flex:none; min-width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; color:var(--color-text); background:transparent; border:1px solid transparent; cursor:pointer" style-hover="background:color-mix(in srgb, var(--color-text) 8%, transparent)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/><path d="M4 6h1v4"/><path d="M3.6 10h2.2"/><path d="M6 18H3.8c0-1.1 2-1.8 2-2.9 0-.7-.7-1.1-2-.8"/></svg>
+              </button>
+
+              <div style="margin-left:auto; flex:none; display:flex; align-items:center; gap:7px; padding-left:12px; font-size:12px">
+                <sc-if value="{{ isSaving }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:inline-flex; align-items:center; gap:7px; color:color-mix(in srgb, var(--color-text) 60%, transparent)">
+                    <span style="width:12px; height:12px; border:2px solid currentColor; border-right-color:transparent; animation:dl-spin 700ms linear infinite"></span>Saving…
+                  </span>
+                </sc-if>
+                <sc-if value="{{ isSaved }}" hint-placeholder-val="{{ true }}">
+                  <span style="display:inline-flex; align-items:center; gap:6px; color:color-mix(in srgb, var(--color-text) 60%, transparent)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Saved
+                  </span>
+                </sc-if>
+                <sc-if value="{{ isFailed }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:inline-flex; align-items:center; gap:6px; color:var(--color-accent-700); font-weight:600">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>Save failed — keep typing to retry
+                  </span>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ viewOnly }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:none; display:flex; align-items:center; gap:8px; padding:10px 16px; background:var(--color-accent-100); border-bottom:2px solid var(--color-accent); font-size:12.5px; color:var(--color-accent-800)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <strong style="font-weight:800">View only.</strong> You can read this document but not change it. Ask {{ docOwnerName }} for edit access.
+            </div>
+          </sc-if>
+
+          <div style="flex:1; min-height:0; overflow:auto; display:flex; align-items:flex-start; justify-content:center; padding:32px 24px 96px; background:var(--color-bg)">
+            <div data-sheet="1" style="width:100%; max-width:{{ sheetMax }}; background:var(--color-neutral-100); box-shadow:var(--shadow-sm); padding:56px 60px 96px; min-height:100%">
+              <div data-canvas="1" ref="{{ canvasRef }}" contentEditable="{{ canEdit }}" suppressContentEditableWarning="{{ true }}" onInput="{{ onInput }}" onKeyUp="{{ syncMarks }}" onMouseUp="{{ syncMarks }}" data-placeholder="Start writing…"></div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ NOT FOUND ══ -->
+      <sc-if value="{{ at404 }}" hint-placeholder-val="{{ false }}">
+        <div style="height:100%; display:flex; flex-direction:column; justify-content:center; padding:48px 40px; max-width:620px">
+          <div style="font-family:var(--font-heading); font-weight:800; font-size:96px; line-height:0.9; letter-spacing:-0.04em; color:var(--color-accent)">404</div>
+          <hr class="hr">
+          <h3 style="margin:0 0 10px">This document isn't here</h3>
+          <p class="text-muted" style="font-size:14px; max-width:46ch">It may have been deleted, or you may not have access. Ask the owner to share it with you.</p>
+          <div style="display:flex; gap:8px; margin-top:14px">
+            <button type="button" class="btn btn-primary" onClick="{{ goDash }}" style="min-height:40px">Back to documents</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ SHARE DIALOG ══ -->
+      <sc-if value="{{ shareOpen }}" hint-placeholder-val="{{ false }}">
+        <div data-dialog-wrap="1" class="dialog-backdrop" onClick="{{ backdropClick }}" style="position:absolute; z-index:40">
+          <div data-dialog="1" class="dialog elev-lg" onClick="{{ stop }}" style="width:min(560px, 100%); max-height:88%; overflow:auto; background:var(--color-neutral-100); gap:var(--space-3)">
+            <div style="display:flex; align-items:flex-start; gap:12px">
+              <div style="flex:1; min-width:0">
+                <div class="dialog-title">Share document</div>
+                <div class="text-muted" style="font-size:12.5px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ docTitle }}</div>
+              </div>
+              <button type="button" class="btn btn-secondary btn-icon" onClick="{{ closeShare }}" aria-label="Close" style="flex:none">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+            <hr class="hr" style="margin:0">
+            <div>
+              <div class="field" style="margin-bottom:8px"><label>Share with a teammate by email</label></div>
+              <div data-share-form="1" style="display:flex; align-items:flex-start; gap:8px">
+                <input class="input" type="email" placeholder="name@docslite.app" value="{{ shareEmail }}" onChange="{{ onShareEmail }}" onKeyDown="{{ onShareKey }}" style="flex:1; min-width:0; min-height:40px">
+                <select class="input" value="{{ shareRole }}" onChange="{{ onShareRole }}" aria-label="Access level" style="flex:none; width:auto; min-width:132px; min-height:40px; cursor:pointer">
+                  <option value="edit">Can edit</option>
+                  <option value="view">Can view</option>
+                </select>
+                <button type="button" class="btn btn-primary" onClick="{{ addCollab }}" style="flex:none; min-height:40px; justify-content:center">Share</button>
+              </div>
+              <sc-if value="{{ shareError }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; align-items:center; gap:7px; margin-top:8px; font-size:12.5px; font-weight:600; color:var(--color-accent-700)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>{{ shareError }}
+                </div>
+              </sc-if>
+            </div>
+            <div>
+              <div style="font-family:var(--font-heading); font-weight:800; font-size:10px; letter-spacing:0.12em; color:color-mix(in srgb, var(--color-text) 62%, transparent); padding-bottom:8px; border-bottom:2px solid var(--color-divider)">PEOPLE WITH ACCESS</div>
+              <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--color-divider)">
+                <span style="width:34px; height:34px; flex:none; display:grid; place-items:center; font-family:var(--font-heading); font-weight:800; font-size:11px; color:var(--color-neutral-100); background:{{ ownerColor }}">{{ ownerInitials }}</span>
+                <span style="display:flex; flex-direction:column; min-width:0; flex:1">
+                  <span style="font-size:13.5px; font-weight:600">{{ ownerName }}</span>
+                  <span class="text-muted" style="font-size:11.5px">{{ ownerEmail }}</span>
+                </span>
+                <span class="text-muted" style="flex:none; font-size:12px">Owner</span>
+              </div>
+              <sc-for list="{{ collabRows }}" as="c" hint-placeholder-count="2">
+                <div style="display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--color-divider)">
+                  <span style="width:34px; height:34px; flex:none; display:grid; place-items:center; font-family:var(--font-heading); font-weight:800; font-size:11px; color:var(--color-neutral-100); background:{{ c.color }}">{{ c.initials }}</span>
+                  <span style="display:flex; flex-direction:column; min-width:0; flex:1">
+                    <span style="font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ c.name }}</span>
+                    <span class="text-muted" style="font-size:11.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ c.email }}</span>
+                  </span>
+                  <select class="input" value="{{ c.role }}" onChange="{{ c.setRole }}" aria-label="Access level" style="flex:none; width:auto; min-width:118px; min-height:36px; cursor:pointer">
+                    <option value="edit">Can edit</option>
+                    <option value="view">Can view</option>
+                  </select>
+                  <button type="button" class="btn btn-secondary btn-icon" onClick="{{ c.remove }}" title="Remove access" aria-label="Remove access" style="flex:none; color:var(--color-accent-700)" style-hover="background:var(--color-accent-100); border-color:var(--color-accent)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                  </button>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noCollabs }}" hint-placeholder-val="{{ false }}">
+                <p class="text-muted" style="font-size:12.5px; padding:14px 0 4px; margin:0; border-bottom:1px solid var(--color-divider)">Only you have access. Add a teammate above to start collaborating.</p>
+              </sc-if>
+            </div>
+            <p class="text-muted" style="font-size:11.5px; margin:0">Demo teammates: {{ demoEmails }}</p>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ TOASTS ══ -->
+      <div style="position:absolute; z-index:50; bottom:20px; left:0; right:0; display:flex; flex-direction:column; align-items:center; gap:8px; padding:0 16px; pointer-events:none">
+        <sc-for list="{{ toasts }}" as="toast" hint-placeholder-count="1">
+          <div data-toast="{{ toast.kind }}" style="pointer-events:auto; display:flex; align-items:center; gap:10px; max-width:min(440px, 100%); padding:11px 12px 11px 14px; background:var(--color-text); color:var(--color-neutral-100); box-shadow:var(--shadow-md); animation:dl-toast 160ms ease-out; font-size:13px">
+            <span style="flex:none; display:flex">
+              <sc-if value="{{ toast.isError }}" hint-placeholder-val="{{ false }}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+              </sc-if>
+              <sc-if value="{{ toast.isOk }}" hint-placeholder-val="{{ true }}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              </sc-if>
+            </span>
+            <span style="flex:1">{{ toast.msg }}</span>
+            <button type="button" onClick="{{ toast.dismiss }}" aria-label="Dismiss" style="flex:none; width:26px; height:26px; display:grid; place-items:center; background:transparent; border:0; color:inherit; opacity:0.7; cursor:pointer" style-hover="opacity:1">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+        </sc-for>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showPrototypeBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;login&quot;,&quot;dashboard&quot;,&quot;editor&quot;,&quot;notfound&quot;],&quot;default&quot;:&quot;login&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;canvasMeasure&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:760,&quot;min&quot;:640,&quot;max&quot;:900,&quot;step&quot;:20,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Editor&quot;}}">
+class Component extends DCLogic {
+  USERS = [
+    { id: 'u1', name: 'Alice Reyes', email: 'alice@docslite.app', initials: 'AR', color: '#2d2b2b' },
+    { id: 'u2', name: 'Ben Okafor', email: 'ben@docslite.app', initials: 'BO', color: '#ae1800' },
+    { id: 'u3', name: 'Mira Lindqvist', email: 'mira@docslite.app', initials: 'ML', color: '#444141' },
+    { id: 'u4', name: 'Tomas Vidal', email: 'tomas@docslite.app', initials: 'TV', color: '#7c1405' }
+  ];
+
+  seed() {
+    return [
+      { id: 'd1', title: 'Q3 Product Review', owner: 'u1', updated: '12 minutes ago', collabs: [{ id: 'u2', role: 'edit' }], html: `<h1>Q3 Product Review</h1><p>Three months, one question: did the editor get faster for the people who write in it every day? This is the short version — numbers first, arguments after.</p><h2>What shipped</h2><ul><li><strong>Autosave</strong> moved off the request path. Median save is now 90ms.</li><li>Formatting toolbar rebuilt with real active states.</li><li>Sharing by email, with two access levels.</li></ul><h3>Open questions</h3><ol><li>Do we need a third access level, or is <em>can edit</em> / <em>can view</em> enough?</li><li>Should uploads keep the original filename as the title?</li></ol><p>Everything else — comments, history, presence — stays out of scope until the writing surface is <u>unarguably good</u>.</p>` },
+      { id: 'd2', title: 'Onboarding Rewrite', owner: 'u1', updated: '2 hours ago', collabs: [], html: `<h1>Onboarding Rewrite</h1><p>The current first run explains the product. The new one should just hand the person a blank page and get out of the way.</p><h2>Principles</h2><ul><li>No tour. No checklist.</li><li>One document, pre-titled, cursor already blinking.</li></ul>` },
+      { id: 'd3', title: 'Pricing Experiments — Notes', owner: 'u1', updated: 'Yesterday', collabs: [{ id: 'u3', role: 'view' }], html: `<h1>Pricing Experiments</h1><p>Raw notes from the three tests we ran in June. Nothing here is decided.</p><ol><li>Per-seat, flat rate, and usage-tiered.</li><li>Seat pricing won on clarity, lost on small teams.</li></ol>` },
+      { id: 'd4', title: 'Release Checklist', owner: 'u1', updated: '3 days ago', collabs: [], html: `<h1>Release Checklist</h1><ul><li>Token audit against the design system</li><li>Keyboard pass on the toolbar</li><li>Contrast check — AA on every state</li></ul>` },
+      { id: 'd5', title: 'Design System Audit', owner: 'u3', updated: '5 hours ago', collabs: [{ id: 'u1', role: 'edit' }], html: `<h1>Design System Audit</h1><p>Every surface in the product, measured against the token set. The rules are 2px everywhere except where someone forgot.</p><h2>Findings</h2><ul><li>Four one-off greys that should be ramp steps.</li><li>Two rounded corners. Both removed.</li></ul>` },
+      { id: 'd6', title: 'Board Update — July', owner: 'u2', updated: 'Monday', collabs: [{ id: 'u1', role: 'view' }], html: `<h1>Board Update — July</h1><p>Retention held. Activation moved four points after the editor work landed.</p><h3>Next quarter</h3><p>One theme: make sharing feel as safe as it actually is.</p>` }
+    ];
+  }
+
+  state = {
+    route: null, userId: null, signingIn: null, docId: null,
+    docs: this.seed(), emptyMode: false, viewport: 'desktop', drawer: false,
+    shareOpen: false, shareEmail: '', shareRole: 'edit', shareError: '',
+    save: 'saved', toasts: [], marks: {}, block: 'p', uploading: false, roleOverride: null
+  };
+
+  componentDidMount() {
+    this._sel = () => this.syncMarks();
+    document.addEventListener('selectionchange', this._sel);
+    this.loadCanvas();
+  }
+  componentWillUnmount() {
+    document.removeEventListener('selectionchange', this._sel);
+    clearTimeout(this._saveT);
+  }
+  componentDidUpdate() { this.loadCanvas(); }
+
+  /* ── data helpers ── */
+  u(id) { return this.USERS.find(x => x.id === id) || this.USERS[0]; }
+  me() { return this.u(this.state.userId || 'u1'); }
+  docs() { return this.state.emptyMode ? [] : this.state.docs; }
+  doc() { return this.docs().find(d => d.id === this.state.docId) || null; }
+  rawRole(d) {
+    if (!d) return null;
+    const me = this.me().id;
+    if (d.owner === me) return 'owner';
+    const c = (d.collabs || []).find(x => x.id === me);
+    return c ? c.role : null;
+  }
+  role(d) { return this.state.roleOverride || this.rawRole(d); }
+
+  /* ── navigation ── */
+  go = (route) => this.setState({ route, drawer: false, shareOpen: false });
+  signIn = (id) => {
+    this.setState({ signingIn: id });
+    setTimeout(() => this.setState({ signingIn: null, userId: id, route: 'dash', docId: null, roleOverride: null }), 420);
+  };
+  signOut = () => this.setState({ route: 'login', userId: null, docId: null, drawer: false, roleOverride: null });
+  openDoc = (id) => { this._loaded = null; this.setState({ route: 'doc', docId: id, drawer: false, save: 'saved', roleOverride: null }); };
+  goDash = () => this.setState({ route: 'dash', shareOpen: false });
+  openDrawer = () => this.setState({ drawer: true });
+  closeDrawer = () => this.setState({ drawer: false });
+
+  newDoc = () => {
+    const id = 'd' + Date.now();
+    const doc = { id, title: 'Untitled document', owner: this.me().id, updated: 'Just now', collabs: [], html: '' };
+    this._loaded = null;
+    this.setState(s => ({ docs: [doc].concat(s.docs), emptyMode: false, route: 'doc', docId: id, drawer: false, save: 'saved', roleOverride: null }));
+  };
+
+  deleteDoc = () => {
+    const d = this.doc(); if (!d) return;
+    this.setState(s => ({ docs: s.docs.filter(x => x.id !== d.id), route: 'dash', docId: null, shareOpen: false }));
+    this.toast('success', 'Deleted “' + d.title + '”.');
+  };
+
+  onTitle = (e) => {
+    const v = e.target.value, id = this.state.docId;
+    this.setState(s => ({ docs: s.docs.map(d => d.id === id ? Object.assign({}, d, { title: v, updated: 'Just now' }) : d) }));
+    this.touch();
+  };
+
+  /* ── canvas ── */
+  canvasRef = (el) => {
+    this.canvas = el;
+    if (!el) { this._loaded = null; return; }
+    this.loadCanvas();
+  };
+  loadCanvas() {
+    const d = this.doc();
+    if (!this.canvas || !d || this._loaded === d.id) return;
+    this.canvas.innerHTML = d.html || '';
+    this._loaded = d.id;
+    this.markEmpty();
+  }
+  markEmpty() {
+    if (!this.canvas) return;
+    if (this.canvas.textContent.trim()) this.canvas.removeAttribute('data-empty');
+    else this.canvas.setAttribute('data-empty', '1');
+  }
+  onInput = () => { this.markEmpty(); this.touch(); this.syncMarks(); };
+  touch = () => {
+    clearTimeout(this._saveT);
+    if (this.state.save !== 'saving') this.setState({ save: 'saving' });
+    this._saveT = setTimeout(() => {
+      const id = this.state.docId, html = this.canvas ? this.canvas.innerHTML : '';
+      this.setState(s => ({ save: 'saved', docs: s.docs.map(d => d.id === id ? Object.assign({}, d, { html, updated: 'Just now' }) : d) }));
+    }, 750);
+  };
+  exec = (cmd, val) => {
+    if (!this.canvas) return;
+    this.canvas.focus();
+    try { document.execCommand(cmd, false, val); } catch (e) { /* noop */ }
+    this.markEmpty(); this.touch(); this.syncMarks();
+  };
+  syncMarks = () => {
+    if (!this.canvas) return;
+    const sel = document.getSelection();
+    if (!sel || !sel.anchorNode || !this.canvas.contains(sel.anchorNode)) return;
+    const m = {};
+    ['bold', 'italic', 'underline', 'insertUnorderedList', 'insertOrderedList'].forEach(c => {
+      try { m[c] = document.queryCommandState(c); } catch (e) { m[c] = false; }
+    });
+    let block = 'p';
+    try { block = String(document.queryCommandValue('formatBlock') || 'p').toLowerCase(); } catch (e) { /* noop */ }
+    if (block === 'div' || block === '') block = 'p';
+    if (this.state.block !== block || JSON.stringify(this.state.marks) !== JSON.stringify(m)) this.setState({ block, marks: m });
+  };
+
+  /* ── upload ── */
+  fileRef = (el) => { this.file = el; };
+  pickFile = () => { if (this.file) this.file.click(); };
+  onFile = (e) => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    if (!/\.(txt|md|markdown)$/i.test(f.name)) { this.toast('error', 'Only .txt and .md files can be uploaded.'); return; }
+    if (f.size > 1024 * 1024) { this.toast('error', 'That file is over 1 MB — try a smaller one.'); return; }
+    this.setState({ uploading: true });
+    const r = new FileReader();
+    r.onerror = () => { this.setState({ uploading: false }); this.toast('error', 'Upload failed. Try that file again.'); };
+    r.onload = () => setTimeout(() => {
+      const id = 'd' + Date.now();
+      const title = f.name.replace(/\.(txt|md|markdown)$/i, '');
+      const doc = { id, title, owner: this.me().id, updated: 'Just now', collabs: [], html: this.toHtml(String(r.result || '')) };
+      this._loaded = null;
+      this.setState(s => ({ uploading: false, docs: [doc].concat(s.docs), emptyMode: false, route: 'doc', docId: id, save: 'saved', roleOverride: null }));
+      this.toast('success', 'Imported “' + title + '”.');
+    }, 500);
+    r.readAsText(f);
+  };
+  esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  toHtml(text) {
+    const out = []; let list = null;
+    const close = () => { if (list) { out.push('</' + list + '>'); list = null; } };
+    String(text).split(/\r?\n/).forEach(raw => {
+      const line = raw.trim();
+      if (!line) { close(); return; }
+      let m;
+      if ((m = line.match(/^(#{1,3})\s+(.*)$/))) { close(); out.push('<h' + m[1].length + '>' + this.esc(m[2]) + '</h' + m[1].length + '>'); return; }
+      if ((m = line.match(/^[-*+]\s+(.*)$/))) { if (list !== 'ul') { close(); out.push('<ul>'); list = 'ul'; } out.push('<li>' + this.esc(m[1]) + '</li>'); return; }
+      if ((m = line.match(/^\d+[.)]\s+(.*)$/))) { if (list !== 'ol') { close(); out.push('<ol>'); list = 'ol'; } out.push('<li>' + this.esc(m[1]) + '</li>'); return; }
+      close(); out.push('<p>' + this.esc(line) + '</p>');
+    });
+    close();
+    return out.join('') || '';
+  }
+
+  /* ── sharing ── */
+  openShare = () => this.setState({ shareOpen: true, shareError: '', shareEmail: '' });
+  closeShare = () => this.setState({ shareOpen: false, shareError: '' });
+  addCollab = () => {
+    const d = this.doc(); if (!d) return;
+    const email = this.state.shareEmail.trim().toLowerCase();
+    if (!email) return this.setState({ shareError: 'Enter an email address.' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return this.setState({ shareError: 'That doesn’t look like an email address.' });
+    const user = this.USERS.find(u => u.email.toLowerCase() === email);
+    if (!user) return this.setState({ shareError: 'No DocsLite account uses that email.' });
+    if (user.id === d.owner) return this.setState({ shareError: user.name.split(' ')[0] + ' already owns this document.' });
+    if ((d.collabs || []).some(c => c.id === user.id)) return this.setState({ shareError: user.name.split(' ')[0] + ' already has access.' });
+    const role = this.state.shareRole;
+    this.setState(s => ({
+      shareEmail: '', shareError: '',
+      docs: s.docs.map(x => x.id === d.id ? Object.assign({}, x, { collabs: (x.collabs || []).concat([{ id: user.id, role }]) }) : x)
+    }));
+    this.toast('success', user.name + ' can now ' + (role === 'edit' ? 'edit' : 'view') + ' this document.');
+  };
+  setCollabRole = (uid, role) => {
+    const d = this.doc(); if (!d) return;
+    this.setState(s => ({ docs: s.docs.map(x => x.id === d.id ? Object.assign({}, x, { collabs: x.collabs.map(c => c.id === uid ? { id: uid, role } : c) }) : x) }));
+    this.toast('success', this.u(uid).name.split(' ')[0] + ' can now ' + (role === 'edit' ? 'edit' : 'view') + '.');
+  };
+  removeCollab = (uid) => {
+    const d = this.doc(); if (!d) return;
+    this.setState(s => ({ docs: s.docs.map(x => x.id === d.id ? Object.assign({}, x, { collabs: x.collabs.filter(c => c.id !== uid) }) : x) }));
+    this.toast('success', 'Removed ' + this.u(uid).name.split(' ')[0] + '’s access.');
+  };
+
+  /* ── toasts ── */
+  toast = (kind, msg) => {
+    const id = 't' + Date.now() + Math.random();
+    this.setState(s => ({ toasts: s.toasts.concat([{ id, kind, msg }]) }));
+    setTimeout(() => this.dismiss(id), 4200);
+  };
+  dismiss = (id) => this.setState(s => ({ toasts: s.toasts.filter(t => t.id !== id) }));
+
+  tagFor(role) { return role === 'owner' ? 'tag-accent' : role === 'edit' ? 'tag-neutral' : 'tag-outline'; }
+  labelFor(role) { return role === 'owner' ? 'Owner' : role === 'edit' ? 'Can edit' : 'View only'; }
+
+  renderVals() {
+    const s = this.state;
+    const start = this.props.startScreen || 'login';
+    const route = s.route || (start === 'dashboard' ? 'dash' : start === 'editor' ? 'doc' : start === 'notfound' ? '404' : 'login');
+    const docId = s.docId || (route === 'doc' ? 'd1' : null);
+    if (route === 'doc' && !s.docId) s.docId = docId;
+    const me = this.me();
+    const all = this.docs();
+    const d = all.find(x => x.id === docId) || null;
+    const role = this.role(d);
+    const mine = all.filter(x => x.owner === me.id);
+    const shared = all.filter(x => x.owner !== me.id && (x.collabs || []).some(c => c.id === me.id));
+    const row = (x) => ({
+      id: x.id, title: x.title, updated: x.updated, active: x.id === docId ? '1' : null,
+      owner: x.owner === me.id ? 'You' : this.u(x.owner).name.split(' ')[0],
+      role: this.labelFor(this.rawRole(x)), tagClass: this.tagFor(this.rawRole(x)),
+      open: () => this.openDoc(x.id)
+    });
+    const seg = (val, key, cur, label) => ({ label, on: cur === val ? '1' : null, click: () => this.setState({ [key]: val }) });
+    const owner = d ? this.u(d.owner) : me;
+
+    return {
+      showBar: this.props.showPrototypeBar !== false,
+      frameMax: s.viewport === 'mobile' ? '390px' : s.viewport === 'tablet' ? '834px' : '100%',
+      sheetMax: (this.props.canvasMeasure || 760) + 'px',
+      atLogin: route === 'login', atDash: route === 'dash', atDoc: route === 'doc' && !!d, at404: route === '404' || (route === 'doc' && !d),
+
+      vpOptions: [seg('desktop', 'viewport', s.viewport, 'DESKTOP'), seg('tablet', 'viewport', s.viewport, 'TABLET'), seg('mobile', 'viewport', s.viewport, 'MOBILE')],
+      roleOptions: [
+        { label: 'ACTUAL', on: !s.roleOverride ? '1' : null, click: () => this.setState({ roleOverride: null }) },
+        { label: 'CAN EDIT', on: s.roleOverride === 'edit' ? '1' : null, click: () => this.setState({ roleOverride: 'edit' }) },
+        { label: 'VIEW ONLY', on: s.roleOverride === 'view' ? '1' : null, click: () => this.setState({ roleOverride: 'view' }) }
+      ],
+      jumpOptions: [
+        { label: 'EMPTY STATE', on: s.emptyMode ? '1' : null, click: () => this.setState({ emptyMode: !s.emptyMode, route: 'dash', docId: null }) },
+        { label: 'NO ACCESS', on: route === '404' ? '1' : null, click: () => this.go('404') },
+        { label: 'SIGN OUT', click: this.signOut },
+        { label: 'RESET', click: () => this.setState({ docs: this.seed(), emptyMode: false, roleOverride: null, route: 'login', userId: null, docId: null, toasts: [] }) }
+      ],
+
+      userRows: this.USERS.map(u => ({
+        name: u.name, email: u.email, initials: u.initials, color: u.color,
+        busy: s.signingIn === u.id ? '1' : null, idle: s.signingIn === u.id ? null : '1',
+        click: () => this.signIn(u.id)
+      })),
+
+      myDocs: mine.map(row), sharedDocs: shared.map(row), recentRows: mine.concat(shared).map(row),
+      myCount: String(mine.length), sharedCount: String(shared.length),
+      totalLabel: mine.length + shared.length + ' documents',
+      noMyDocs: mine.length === 0 ? true : false, noSharedDocs: shared.length === 0 ? true : false,
+      hasAnyDoc: mine.length + shared.length > 0 ? true : false,
+      noDocsAtAll: mine.length + shared.length === 0 ? true : false,
+      drawerOpen: s.drawer ? true : false,
+      meName: me.name, meEmail: me.email, meInitials: me.initials, meColor: me.color,
+      newDoc: this.newDoc, pickFile: this.pickFile, onFile: this.onFile, fileRef: this.fileRef,
+      uploading: s.uploading ? true : false, notUploading: s.uploading ? false : true,
+      uploadLabel: s.uploading ? 'Uploading…' : 'Upload .txt / .md',
+      signOut: this.signOut, goDash: this.goDash, openDrawer: this.openDrawer, closeDrawer: this.closeDrawer,
+
+      docTitle: d ? d.title : '', docOwnerName: owner.name.split(' ')[0],
+      isOwner: role === 'owner' ? true : false, notOwner: role === 'owner' ? false : true,
+      canEdit: role === 'owner' || role === 'edit' ? true : false,
+      viewOnly: role === 'view' ? true : false,
+      roleLabel: this.labelFor(role), roleTagClass: this.tagFor(role),
+      onTitle: this.onTitle, deleteDoc: this.deleteDoc, canvasRef: this.canvasRef, onInput: this.onInput, syncMarks: this.syncMarks,
+
+      h1On: s.block === 'h1' ? '1' : null, h2On: s.block === 'h2' ? '1' : null,
+      h3On: s.block === 'h3' ? '1' : null, pOn: s.block === 'p' ? '1' : null,
+      doH1: () => this.exec('formatBlock', 'H1'), doH2: () => this.exec('formatBlock', 'H2'),
+      doH3: () => this.exec('formatBlock', 'H3'), doP: () => this.exec('formatBlock', 'P'),
+      boldOn: s.marks.bold ? '1' : null, italicOn: s.marks.italic ? '1' : null, underlineOn: s.marks.underline ? '1' : null,
+      ulOn: s.marks.insertUnorderedList ? '1' : null, olOn: s.marks.insertOrderedList ? '1' : null,
+      doBold: () => this.exec('bold'), doItalic: () => this.exec('italic'), doUnderline: () => this.exec('underline'),
+      doUl: () => this.exec('insertUnorderedList'), doOl: () => this.exec('insertOrderedList'),
+      isSaving: s.save === 'saving' ? true : false, isSaved: s.save === 'saved' ? true : false, isFailed: s.save === 'error' ? true : false,
+
+      shareOpen: s.shareOpen && d ? true : false,
+      openShare: this.openShare, closeShare: this.closeShare, addCollab: this.addCollab,
+      backdropClick: this.closeShare, stop: (e) => e.stopPropagation(),
+      shareEmail: s.shareEmail, shareRole: s.shareRole, shareError: s.shareError || null,
+      onShareEmail: (e) => this.setState({ shareEmail: e.target.value, shareError: '' }),
+      onShareRole: (e) => this.setState({ shareRole: e.target.value }),
+      onShareKey: (e) => { if (e.key === 'Enter') this.addCollab(); if (e.key === 'Escape') this.closeShare(); },
+      ownerName: d && d.owner === me.id ? me.name + ' (you)' : owner.name, ownerEmail: owner.email, ownerInitials: owner.initials, ownerColor: owner.color,
+      collabRows: (d ? d.collabs || [] : []).map(c => {
+        const u = this.u(c.id);
+        return { name: u.name, email: u.email, initials: u.initials, color: u.color, role: c.role, setRole: (e) => this.setCollabRole(c.id, e.target.value), remove: () => this.removeCollab(c.id) };
+      }),
+      noCollabs: d && (d.collabs || []).length === 0 ? true : false,
+      demoEmails: this.USERS.filter(u => u.id !== me.id).map(u => u.email).join('  ·  '),
+
+      toasts: s.toasts.map(t => ({ id: t.id, kind: t.kind, msg: t.msg, isError: t.kind === 'error' ? '1' : null, isOk: t.kind === 'error' ? null : '1', dismiss: () => this.dismiss(t.id) }))
+    };
+  }
+}
+</script>
+</body>
+</html>
