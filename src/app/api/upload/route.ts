@@ -3,6 +3,7 @@ import { requireUser } from '@/lib/session';
 import { validateUpload } from '@/lib/upload/validate';
 import { parseUpload } from '@/lib/upload/parse';
 import { createDocumentWithContent } from '@/server/services/documentService';
+import { uploadRateLimit, RateLimitError } from '@/server/services/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -12,6 +13,13 @@ export async function POST(req: Request) {
     user = await requireUser();
   } catch {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  }
+
+  try {
+    uploadRateLimit(user.id);
+  } catch (err) {
+    if (err instanceof RateLimitError) return NextResponse.json({ error: err.message }, { status: 429 });
+    throw err;
   }
 
   let form: FormData;

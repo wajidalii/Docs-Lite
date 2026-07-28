@@ -6,6 +6,7 @@ import { requireUser } from '@/lib/session';
 import { zTiptapDoc, zTitle, zUuid } from '@/lib/validation';
 import * as svc from '@/server/services/documentService';
 import { NotFoundError } from '@/server/services/access-control';
+import { RateLimitError } from '@/server/services/rate-limit';
 
 function notFoundResult() {
   return { ok: false as const, error: 'Document not found' };
@@ -48,6 +49,7 @@ export async function saveDoc(id: string, content: unknown) {
     await svc.saveDocumentContent(parsedId.data, user.id, content);
   } catch (err) {
     if (err instanceof NotFoundError) return notFoundResult();
+    if (err instanceof RateLimitError) return { ok: false as const, error: err.message };
     throw err;
   }
   return { ok: true as const, savedAt: new Date().toISOString() };

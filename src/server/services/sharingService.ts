@@ -3,6 +3,7 @@ import type { Role } from '@/lib/access';
 import { findUserById, findUserByEmail } from '@/server/repositories/userRepo';
 import * as shareRepo from '@/server/repositories/shareRepo';
 import { requireDocAccess } from './access-control';
+import { shareRateLimit } from './rate-limit';
 
 /** User-facing sharing error (invalid target, self-share, etc.). */
 export class ShareError extends Error {
@@ -16,6 +17,7 @@ export type { Collaborator } from '@/server/repositories/shareRepo';
 
 /** Grant or update access for the user with `email`. Owner only. */
 export async function shareDocument(docId: string, actingUserId: string, email: string, role: Role) {
+  shareRateLimit(actingUserId);
   await requireDocAccess(docId, actingUserId, 'owner');
 
   const target = await findUserByEmail(email);
@@ -28,6 +30,7 @@ export async function shareDocument(docId: string, actingUserId: string, email: 
 
 /** Change an existing collaborator's role. Owner only. */
 export async function changeRole(docId: string, actingUserId: string, targetUserId: string, role: Role) {
+  shareRateLimit(actingUserId);
   await requireDocAccess(docId, actingUserId, 'owner');
   if (targetUserId === actingUserId) throw new ShareError('You already own this document');
   if (!(await findUserById(targetUserId))) throw new ShareError('No user with that id');
@@ -37,6 +40,7 @@ export async function changeRole(docId: string, actingUserId: string, targetUser
 
 /** Remove a collaborator. Owner only. */
 export async function revokeShare(docId: string, actingUserId: string, targetUserId: string) {
+  shareRateLimit(actingUserId);
   await requireDocAccess(docId, actingUserId, 'owner');
   await shareRepo.removeShare(docId, targetUserId);
   return shareRepo.listShares(docId);

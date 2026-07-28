@@ -6,12 +6,14 @@ import { zEmail, zRole, zUuid } from '@/lib/validation';
 import * as svc from '@/server/services/sharingService';
 import { ShareError, type Collaborator } from '@/server/services/sharingService';
 import { NotFoundError } from '@/server/services/access-control';
+import { RateLimitError } from '@/server/services/rate-limit';
 
 export type ShareResult = { ok: true; collaborators: Collaborator[] } | { ok: false; error: string };
 
 function handleError(err: unknown): ShareResult {
   if (err instanceof ShareError) return { ok: false, error: err.message };
   if (err instanceof NotFoundError) return { ok: false, error: 'Document not found' };
+  if (err instanceof RateLimitError) return { ok: false, error: err.message };
   throw err;
 }
 

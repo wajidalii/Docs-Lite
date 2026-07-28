@@ -2,6 +2,7 @@ import 'server-only';
 import { EMPTY_DOC } from '@/lib/editor/empty';
 import * as repo from '@/server/repositories/documentRepo';
 import { NotFoundError, requireDocAccess } from './access-control';
+import { autosaveRateLimit } from './rate-limit';
 
 // Business rules + authorization. Every function takes the acting userId (from
 // the session, resolved in the action) and authorizes before touching the repo.
@@ -31,6 +32,7 @@ export async function renameDocument(docId: string, userId: string, title: strin
 }
 
 export async function saveDocumentContent(docId: string, userId: string, content: unknown) {
+  autosaveRateLimit(userId);
   await requireDocAccess(docId, userId, 'editor');
   await repo.updateContent(docId, content);
 }
