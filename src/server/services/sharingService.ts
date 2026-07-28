@@ -1,6 +1,6 @@
 import 'server-only';
 import type { Role } from '@/lib/access';
-import { getSeededUser, getSeededUserByEmail } from '@/lib/users';
+import { findUserById, findUserByEmail } from '@/server/repositories/userRepo';
 import * as shareRepo from '@/server/repositories/shareRepo';
 import { requireDocAccess } from './access-control';
 
@@ -18,7 +18,7 @@ export type { Collaborator } from '@/server/repositories/shareRepo';
 export async function shareDocument(docId: string, actingUserId: string, email: string, role: Role) {
   await requireDocAccess(docId, actingUserId, 'owner');
 
-  const target = getSeededUserByEmail(email);
+  const target = await findUserByEmail(email);
   if (!target) throw new ShareError('No user with that email');
   if (target.id === actingUserId) throw new ShareError('You already own this document');
 
@@ -30,7 +30,7 @@ export async function shareDocument(docId: string, actingUserId: string, email: 
 export async function changeRole(docId: string, actingUserId: string, targetUserId: string, role: Role) {
   await requireDocAccess(docId, actingUserId, 'owner');
   if (targetUserId === actingUserId) throw new ShareError('You already own this document');
-  if (!getSeededUser(targetUserId)) throw new ShareError('No user with that id');
+  if (!(await findUserById(targetUserId))) throw new ShareError('No user with that id');
   await shareRepo.upsertShare(docId, targetUserId, role);
   return shareRepo.listShares(docId);
 }

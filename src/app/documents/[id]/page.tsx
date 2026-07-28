@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 import type { JSONContent } from '@tiptap/react';
 import { getCurrentUser } from '@/lib/session';
-import { getSeededUser } from '@/lib/users';
+import { findUserById } from '@/server/repositories/userRepo';
 import { zUuid } from '@/lib/validation';
 import { getDocumentForUser } from '@/server/services/documentService';
 import { NotFoundError } from '@/server/services/access-control';
@@ -24,7 +24,8 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
   }
 
   const canEdit = data.role === 'owner' || data.role === 'editor';
-  const ownerFirstName = getSeededUser(data.doc.ownerId)?.name.split(' ')[0];
+  const owner = await findUserById(data.doc.ownerId);
+  const ownerFirstName = owner?.name.split(' ')[0];
 
   return (
     <main className="dl-doc-page">
