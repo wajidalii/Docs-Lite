@@ -1,9 +1,26 @@
 # Technical Design Document — Collaborative Document Editor ("DocsLite")
 
 **Ajaia LLC Take-Home | AI-Native Full Stack Developer**
-**Status:** LOCKED — single source of truth for implementation
+**Status:** LOCKED — single source of truth for the original take-home build; see Amendment Log below for decisions superseded since
 **Author:** Tech Lead | **Date:** 2026-07-25
 **Timebox:** 4–6 hours to a deployed, testable live slice
+
+---
+
+## Amendment Log
+
+**2026-07-28 — Auth: seeded pick-login → real email/password.** The original
+locked decision (§2 "Out of scope", §3 stack table, §7.1) was that auth would
+be a demo-only seeded pick-login with no credentials, appropriate for the
+take-home timebox. The project is now being evolved as an ongoing product
+beyond the take-home, and real signup/login is needed. Decision: implement
+email/password auth (hashed with Node's built-in `scrypt`, no OAuth/magic-link
+for now), while keeping the 4 seeded demo users — now with a real, documented
+password — so the sharing demo still works out of the box. `iron-session`
+and its cookie mechanics are unchanged; only how identity is established
+(credential check vs. list-pick) changes. §7.1 below is updated in place to
+describe the current behavior; §2/§3 retain the original rationale with a
+pointer here.
 
 ---
 
@@ -35,7 +52,7 @@ DocsLite is a Google-Docs-lite collaborative rich-text editor: users create, edi
 | Cut | One-line justification |
 |---|---|
 | Real-time multiplayer / CRDT | Debounced last-write-wins is honest for a single-user-at-a-time demo; CRDT eats the whole timebox. |
-| Production auth (passwords/OAuth) | Auth is a supporting requirement; seeded pick-login gives a real server session with one-click switching, ideal for demoing sharing. |
+| Production auth (passwords/OAuth) | *(Superseded 2026-07-28 — see Amendment Log — email/password auth has been implemented.)* Originally: auth is a supporting requirement; seeded pick-login gives a real server session with one-click switching, ideal for demoing sharing. |
 | `.docx` upload (default off) | `mammoth` + DOM shim + sanitize is the riskiest piece; `.txt`/`.md` fully satisfies the required feature. |
 | Arbitrary font-size dropdown | Prompt says "headings/text-size"; H1/H2/H3 satisfies it without a custom TextStyle+FontSize mark. |
 | Original-file archival (Blob) | Spec asks for an editable doc, not file storage; parse-on-upload removes a whole storage service. |
@@ -44,7 +61,7 @@ DocsLite is a Google-Docs-lite collaborative rich-text editor: users create, edi
 
 ### What we'd build next
 1. `.docx` import (mammoth → sanitized HTML → `generateJSON` via `@tiptap/html`).
-2. Real auth (Better Auth) + real per-user document ownership.
+2. ~~Real auth (Better Auth) + real per-user document ownership.~~ Done 2026-07-28 — email/password auth shipped directly (scrypt + iron-session) rather than adopting Better Auth; per-user document ownership was already real.
 3. Real-time collaboration via Tiptap + Yjs/Hocuspocus.
 4. Comments, presence cursors, version history, share-by-link with expiry.
 
@@ -65,7 +82,7 @@ DocsLite is a Google-Docs-lite collaborative rich-text editor: users create, edi
 | Migrations | drizzle-kit CLI (`generate` + `migrate`) | `0.31.10` (dev) | — | Committed SQL; runs against local Docker Postgres over `pg`. |
 | DB (deploy target, deferred) | Neon serverless Postgres | free tier | — | Eventual host only; same schema + `pg` driver via its pooled connection string. |
 | Validation | Zod | `4.4.3` | — | Shared client+server schemas; server is authoritative boundary. |
-| Auth/session | iron-session | `8.0.4` | Auth.js v5 (beta) | Encrypted HttpOnly cookie, one env var, App-Router native, no beta lib on live deploy. |
+| Auth/session | iron-session | `8.0.4` | Auth.js v5 (beta) | Encrypted HttpOnly cookie, one env var, App-Router native, no beta lib on live deploy. Identity check as of 2026-07-28 is real email/password (Node `crypto.scrypt` hash) — see Amendment Log; cookie mechanics unchanged. |
 | Markdown parse | `@tiptap/markdown` | `3.28.0` | marked→generateJSON | Official CommonMark parse straight to Tiptap JSON server-side, **no DOM needed**. |
 | `.docx` (stretch) | `mammoth` | `1.12.0` | — | Only if time remains; needs `@tiptap/html` + sanitize + Node runtime. |
 | Sanitizer (HTML paths only) | `isomorphic-dompurify` | `^3.19.0` | sanitize-html | Only for `.docx`/raw-HTML paths; patched DOMPurify ≥3.3.2 (CVE-2026-0540). |
@@ -277,7 +294,22 @@ All mutations are **Server Actions** except file upload (route handler for multi
 
 ## 7. Feature Specs
 
-### 7.1 Auth (seeded pick-login + iron-session)
+### 7.1 Auth (email/password + iron-session)
+**Behavior (updated 2026-07-28 — see Amendment Log; original seeded pick-login spec is below for historical reference):**
+`/login` renders an email + password form calling `signIn(email, password)`. `/signup` renders an email + password + name form calling `signUp(email, password, name)`. Both verify/hash the password with Node's built-in `crypto.scrypt` against the `users.password_hash` column, then write the encrypted HttpOnly cookie `docs_session = { userId }` → redirect `/`. Header shows current user + "Sign out" → `/login`. Session config unchanged: `{ password: env.SESSION_PASSWORD, cookieName: 'docs_session', cookieOptions: { httpOnly: true, secure: NODE_ENV==='production', sameSite: 'lax' } }`. The 4 seeded demo users (Alice, Bob, Carol, Dave) still exist with a documented password so the sharing demo works without creating new accounts.
+
+**Acceptance criteria:**
+- [ ] `getCurrentUser()` reads userId only from the decrypted cookie, then loads the user from the DB; returns null if absent or the user no longer exists.
+- [ ] Unauthenticated request to `/` or any doc action → redirect `/login` / 401.
+- [ ] `signIn` rejects wrong email/password with one generic error (no user-enumeration via distinct error messages).
+- [ ] `signUp` rejects an email already in use.
+- [ ] `secure` is false in dev (local http works), true in production.
+- [ ] Signing in as a different seeded user's credentials changes which docs appear in My vs Shared without a second browser.
+- [ ] README documents the 4 demo accounts' emails + password for the sharing demo.
+
+<details>
+<summary>Original spec (superseded 2026-07-28)</summary>
+
 **Behavior:** `/login` renders 4 seeded users (Alice, Bob, Carol, Dave) as clickable cards. Clicking calls `signInAs(userId)` → writes encrypted HttpOnly cookie `docs_session = { userId }` → redirect `/`. Header shows current user + "Switch user" → `/login`. Session config: `{ password: env.SESSION_PASSWORD, cookieName: 'docs_session', cookieOptions: { httpOnly: true, secure: NODE_ENV==='production', sameSite: 'lax' } }`.
 
 **Acceptance criteria:**
@@ -287,6 +319,8 @@ All mutations are **Server Actions** except file upload (route handler for multi
 - [ ] `secure` is false in dev (local http works), true in production.
 - [ ] Switching user changes which docs appear in My vs Shared without a second browser.
 - [ ] README + login page label this as an intentional demo login.
+
+</details>
 
 ### 7.2 Documents (CRUD + rename)
 **Behavior:** Create → empty doc titled "Untitled" owned by me → open editor. Rename inline in toolbar (save on blur/Enter). Delete (owner only). Reopen loads stored JSON.
