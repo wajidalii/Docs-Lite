@@ -1,4 +1,8 @@
-# Ajaia Take-Home — DocsLite Collaborative Doc Editor
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Ajaia Take-Home — DocsLite Collaborative Doc Editor
 
 This repo is a **single** timed take-home for **Ajaia LLC — "AI-Native Full Stack
 Developer"**. There is one assignment: build a lightweight collaborative document
@@ -35,6 +39,77 @@ access-control logic).
   the signed cookie (never a client-supplied userId) → no IDOR.
 - Editor: `immediatelyRender:false` + a single shared Tiptap extensions array.
 - Env guard throws a named error if `DATABASE_URL` / `SESSION_PASSWORD` are missing.
+
+## Commands
+
+```bash
+docker compose up -d      # start local Postgres (required for db:* and test:int)
+npm run dev                # dev server
+npm run build               # production build
+npm run lint                # eslint
+
+npm test                    # unit tests (tests/*.test.ts) — no DB needed
+npm run test:watch          # unit tests, watch mode
+npx vitest run tests/access.test.ts        # run a single unit test file
+npx vitest run -t "pattern"                # filter by test name
+
+npm run test:int            # integration tests (tests/integration/**) — needs Docker DB up
+
+npm run db:generate         # generate a new SQL migration from schema.ts
+npm run db:migrate          # apply committed migrations (out-of-band; never in the build)
+npm run db:seed             # insert the 4 seeded demo users
+npm run db:reset            # drop & recreate the Docker DB volume (re-run migrate + seed after)
+```
+
+Unit tests stub `server-only` (see `tests/stubs/server-only.ts`, aliased in
+`vitest.config.ts`) so service/lib code can be imported without a request
+context. Integration tests run with `fileParallelism: false` against the real
+Dockerized Postgres and need `docker compose up -d` first.
+
+## Architecture
+
+One Next.js App Router app is both frontend and backend (Server Actions + a
+single `/api/upload` route handler — no separate API service). Every
+request-handling path funnels through the same layering, and violating the
+order is the main way to reintroduce an IDOR:
+
+```
+Client Component
+   → Server Action / route handler   (thin: Zod.parse(input) + getCurrentUser() from the session cookie)
+      → Service layer                (documentService / sharingService — business rules + requireDocAccess)
+         → Repository layer          (documentRepo / shareRepo — Drizzle queries only, no auth logic)
+            → Postgres
+```
+
+- **Access control** is split into two layers on purpose:
+  `src/lib/access.ts` is a pure, DB-free rank model (`viewer(1) < editor(2) <
+  owner(3)`) computing a user's `effectiveRole` from `{ownerId, shares}` — this
+  is the unit-tested security invariant. `src/server/services/access-control.ts`'s
+  `requireDocAccess(docId, userId, min)` is the thin adapter every service
+  function calls before touching a repo; it throws a generic `NotFoundError`
+  on denial (never a 403) so document existence is never leaked. Ownership is
+  implicit in `documents.owner_id` — there is never an owner row in
+  `document_shares`.
+- **Editor content fidelity**: `src/lib/editor/extensions.ts` exports the
+  single shared Tiptap extensions array. It's used both by the client editor
+  (`src/components/editor/Editor.tsx`) and by the server-side markdown parser
+  (`src/lib/upload/parse.ts`, via `@tiptap/markdown`) so uploaded and
+  hand-typed content are schema-compatible and round-trip losslessly through
+  the `jsonb` `documents.content` column. Never declare a second extensions
+  array — content parsed with a different schema will silently lose marks.
+- **Upload flow**: `POST /api/upload` (`runtime = 'nodejs'`) authenticates,
+  validates extension/size (`src/lib/upload/validate.ts`) *before* reading any
+  bytes, then parses — `.md` through the shared Tiptap extensions, `.txt` as
+  literal paragraphs split on blank lines (never markdown-parsed) — and calls
+  `documentService.createDocumentWithContent`.
+- **Env guard** (`src/lib/env.ts`) Zod-validates `DATABASE_URL` /
+  `SESSION_PASSWORD` at import time and throws a named error, so misconfig
+  fails fast instead of surfacing as an opaque 500.
+- **Local vs. locked deploy target**: the app currently runs against the
+  Dockerized Postgres via the plain `pg` driver (deployment is deferred — see
+  README "Deployment" and `tdd.md` §13.B). Wiring `@neondatabase/serverless` /
+  Neon-specific pooling happens only when the deploy step is actually built;
+  don't assume it's already present.
 
 ## How we work
 
