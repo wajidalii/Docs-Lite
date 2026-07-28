@@ -35,6 +35,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         currentUser={{ id: user.id, name: user.name, email: user.email }}
       />
       <Editor
+        key={id}
         docId={id}
         initialContent={data.doc.content as JSONContent}
         editable={canEdit}

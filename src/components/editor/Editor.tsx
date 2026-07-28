@@ -2,9 +2,8 @@
 
 import { useRef, useState } from 'react';
 import { EditorContent, useEditor, type JSONContent } from '@tiptap/react';
-import Placeholder from '@tiptap/extension-placeholder';
 import { Eye } from 'lucide-react';
-import { extensions } from '@/lib/editor/extensions';
+import { editorExtensions } from '@/lib/editor/extensions';
 import { saveDoc } from '@/app/actions/documents';
 import { Toolbar, type SaveStatus } from './Toolbar';
 
@@ -49,7 +48,7 @@ export function Editor({
   };
 
   const editor = useEditor({
-    extensions: [...extensions, Placeholder.configure({ placeholder: 'Start writing…' })],
+    extensions: editorExtensions,
     content: initialContent,
     editable,
     immediatelyRender: false,

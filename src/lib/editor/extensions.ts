@@ -1,4 +1,5 @@
 import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
 
 // The SINGLE shared extensions array. Both the client editor and the server-side
 // markdown/upload parser MUST use this exact set so content round-trips without
@@ -11,3 +12,9 @@ export const extensions = [
     heading: { levels: [1, 2, 3] },
   }),
 ];
+
+// Client-editor-only composition: adds the Placeholder view decoration on top
+// of the shared schema. Placeholder contributes no nodes/marks, so it never
+// affects parsing/round-trip fidelity — kept out of `extensions` because that
+// array is also fed to the server-side MarkdownManager, which has no view.
+export const editorExtensions = [...extensions, Placeholder.configure({ placeholder: 'Start writing…' })];
