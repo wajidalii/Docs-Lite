@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "mcp__context7__resolve-library-id"
+      "mcp__context7__resolve-library-id",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   },
   "enabledMcpjsonServers": [
