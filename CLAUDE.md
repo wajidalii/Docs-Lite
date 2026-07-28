@@ -47,6 +47,17 @@ access-control logic).
 - State assumptions explicitly; be honest about status (if a test fails or a step
   is skipped, say so).
 
+## Git / GitHub workflow
+
+For every bug fix or feature (not doc/config-only tweaks):
+
+1. Create a GitHub issue for it (`gh issue create`) before starting work.
+2. Create a branch for that issue off `master` (e.g. `issue-<n>-short-slug`).
+3. Commit the change(s) on that branch, referencing the issue (e.g. `Closes #<n>`).
+4. Open a pull request for the branch (`gh pr create`).
+5. Merge the pull request into `master` (`gh pr merge`).
+6. Push with `git push` only — never `git push origin master` — after checking out `master` locally and syncing it to the merged result.
+
 ## Deliverables (Ajaia requires; see tdd.md §14 for the full map)
 
 Source code · README (setup/run/deploy) · architecture note · AI-workflow note ·
