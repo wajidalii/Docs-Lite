@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { zTitle, zEmail, zRole, zTiptapDoc, zUuid } from '@/lib/validation';
+import { zTitle, zEmail, zRole, zTiptapDoc, zUuid, zPassword, zSignUpInput, zSignInInput } from '@/lib/validation';
 
 describe('validation schemas', () => {
   it('zTitle trims and requires 1..200 chars', () => {
@@ -29,5 +29,22 @@ describe('validation schemas', () => {
     expect(zTiptapDoc.safeParse({ type: 'doc', content: [] }).success).toBe(true);
     expect(zTiptapDoc.safeParse({ type: 'paragraph' }).success).toBe(false);
     expect(zTiptapDoc.safeParse('string').success).toBe(false);
+  });
+
+  it('zPassword requires at least 8 chars', () => {
+    expect(zPassword.safeParse('short').success).toBe(false);
+    expect(zPassword.safeParse('longenough').success).toBe(true);
+  });
+
+  it('zSignUpInput requires email, password, and name', () => {
+    expect(zSignUpInput.safeParse({ email: 'a@b.dev', password: 'longenough', name: 'Ada' }).success).toBe(true);
+    expect(zSignUpInput.safeParse({ email: 'nope', password: 'longenough', name: 'Ada' }).success).toBe(false);
+    expect(zSignUpInput.safeParse({ email: 'a@b.dev', password: 'short', name: 'Ada' }).success).toBe(false);
+    expect(zSignUpInput.safeParse({ email: 'a@b.dev', password: 'longenough', name: '' }).success).toBe(false);
+  });
+
+  it('zSignInInput requires email and password only', () => {
+    expect(zSignInInput.safeParse({ email: 'a@b.dev', password: 'longenough' }).success).toBe(true);
+    expect(zSignInInput.safeParse({ email: 'nope', password: 'longenough' }).success).toBe(false);
   });
 });

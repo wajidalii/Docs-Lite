@@ -31,7 +31,7 @@ via Server Actions and route handlers) on **Postgres**, run locally with Docker.
 | Database | Postgres (local via Docker; `pg` driver, deploy-ready for Neon) |
 | ORM / migrations | Drizzle ORM + drizzle-kit |
 | Editor | Tiptap v3 (StarterKit) — content stored as JSON in `jsonb` |
-| Auth | iron-session (encrypted cookie) + seeded pick-login |
+| Auth | iron-session (encrypted cookie) + email/password (Node `crypto.scrypt`) |
 | Upload parsing | `@tiptap/markdown` (server-side, no DOM) |
 | Validation | Zod (shared client + server) |
 | Styling | Tailwind CSS v4 (`@theme` tokens) + custom design system; Instrument Sans / Source Serif 4 / Instrument Serif via `next/font`; `sonner` toasts |
@@ -67,7 +67,8 @@ npm run db:seed
 
 # 5. Run the app
 npm run dev
-# open http://localhost:3000  →  pick a user (e.g. Alice) to sign in
+# open http://localhost:3000  →  sign in as a demo user (see "Seeded demo users" below)
+#   or create your own account at /signup
 ```
 
 To reset the database: `npm run db:reset` then re-run `db:migrate` and `db:seed`.
@@ -98,7 +99,7 @@ is missing or invalid.
 
 ## Seeded demo users
 
-Sign in as any of these (no password — intentional demo login):
+Sign in as any of these — password for all four is `docslite-demo`:
 
 | Name | Email |
 |---|---|
@@ -107,16 +108,16 @@ Sign in as any of these (no password — intentional demo login):
 | Carol Nasser | `carol@docslite.dev` |
 | Dave Okoro | `dave@docslite.dev` |
 
+You can also create your own account at `/signup`.
+
 ### Demoing the sharing flow
 
 The quickest way to see both sides at once:
 
 1. In your normal window, sign in as **Alice**, create a document, click
    **Share**, and share it with `bob@docslite.dev` as **Can edit**.
-2. Open a **second window (or incognito)**, sign in as **Bob** — the document
-   appears under **Shared with me** and Bob can edit it.
-
-(You can also use the "Switch user" button to swap users in a single window.)
+2. Open a **second window (or incognito)**, sign in as **Bob** (`bob@docslite.dev` /
+   `docslite-demo`) — the document appears under **Shared with me** and Bob can edit it.
 
 ## File upload
 

@@ -8,6 +8,13 @@
       "when": 1784981137858,
       "tag": "0000_soft_talon",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785247285828,
+      "tag": "0001_military_lightspeed",
+      "breakpoints": true
     }
   ]
 }

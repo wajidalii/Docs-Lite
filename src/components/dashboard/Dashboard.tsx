@@ -116,7 +116,7 @@ export function Dashboard({ user, owned, shared }: { user: User; owned: Doc[]; s
             <span className="email">{user.email}</span>
           </span>
           <form action={signOut}>
-            <button type="submit" className="dl-icon-btn" title="Switch user" aria-label="Switch user">
+            <button type="submit" className="dl-icon-btn" title="Sign out" aria-label="Sign out">
               <LogOut size={17} />
             </button>
           </form>

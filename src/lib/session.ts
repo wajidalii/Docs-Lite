@@ -3,9 +3,10 @@ import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { getIronSession, type SessionOptions } from 'iron-session';
 import { env } from '@/lib/env';
-import { getSeededUser, type SeededUser } from '@/lib/users';
+import { findUserById } from '@/server/repositories/userRepo';
 
 export type SessionData = { userId?: string };
+export type CurrentUser = { id: string; name: string; email: string };
 
 const sessionOptions: SessionOptions = {
   password: env.SESSION_PASSWORD,
@@ -26,14 +27,16 @@ export async function getSession() {
  * The currently signed-in user, or null. Identity is read ONLY from the signed
  * cookie — never a param/header/body. Memoized per-request via React cache().
  */
-export const getCurrentUser = cache(async (): Promise<SeededUser | null> => {
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const session = await getSession();
   if (!session.userId) return null;
-  return getSeededUser(session.userId) ?? null;
+  const user = await findUserById(session.userId);
+  if (!user) return null;
+  return { id: user.id, name: user.name, email: user.email };
 });
 
 /** Same as getCurrentUser but throws when unauthenticated (for actions). */
-export async function requireUser(): Promise<SeededUser> {
+export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
   return user;

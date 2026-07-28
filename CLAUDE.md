@@ -26,8 +26,12 @@ docs.
 Single **Next.js 16 App Router (TS)** app — frontend + backend via Server Actions
 + route handlers — on **Vercel free**. **Drizzle ORM** + `@neondatabase/serverless`
 → **Neon** Postgres. Editor **Tiptap v3** (StarterKit already includes Underline).
-Content stored as **jsonb** (Tiptap JSON). Auth = **iron-session** seeded
-pick-login. Upload `.txt`/`.md` via **`@tiptap/markdown`**. Validation **Zod**.
+Content stored as **jsonb** (Tiptap JSON). Auth = **iron-session** session
+cookie + real email/password (Node `crypto.scrypt` hashing) — see tdd.md's
+Amendment Log (2026-07-28); originally a seeded pick-login with no
+credentials, now real signup/login while keeping the 4 seeded demo users
+(with a documented password) for the sharing demo. Upload `.txt`/`.md` via
+**`@tiptap/markdown`**. Validation **Zod**.
 Styling Tailwind v4 + shadcn/ui. Tests **Vitest** (⭐ meaningful test =
 access-control logic).
 
