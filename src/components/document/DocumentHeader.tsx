@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, Trash2 } from 'lucide-react';
 import { renameDoc, deleteDoc } from '@/app/actions/documents';
 import { ShareDialog } from './ShareDialog';
+import { showToast } from '@/lib/toast';
 import type { EffectiveRole } from '@/lib/access';
 
 type User = { id: string; name: string; email: string };
@@ -40,7 +41,11 @@ export function DocumentHeader({
 
   async function onDelete() {
     if (!confirm('Delete this document? This cannot be undone.')) return;
-    await deleteDoc(docId);
+    const res = await deleteDoc(docId);
+    if (!res.ok) {
+      showToast('error', res.error);
+      router.refresh();
+    }
   }
 
   return (

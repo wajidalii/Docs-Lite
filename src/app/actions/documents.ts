@@ -5,6 +5,11 @@ import { revalidatePath } from 'next/cache';
 import { requireUser } from '@/lib/session';
 import { zTiptapDoc, zTitle, zUuid } from '@/lib/validation';
 import * as svc from '@/server/services/documentService';
+import { NotFoundError } from '@/server/services/access-control';
+
+function notFoundResult() {
+  return { ok: false as const, error: 'Document not found' };
+}
 
 export async function createDoc() {
   const user = await requireUser();
@@ -19,7 +24,12 @@ export async function renameDoc(id: string, title: string) {
   if (!parsedId.success) return { ok: false as const, error: 'Invalid document id' };
   if (!parsedTitle.success) return { ok: false as const, error: parsedTitle.error.issues[0].message };
 
-  await svc.renameDocument(parsedId.data, user.id, parsedTitle.data);
+  try {
+    await svc.renameDocument(parsedId.data, user.id, parsedTitle.data);
+  } catch (err) {
+    if (err instanceof NotFoundError) return notFoundResult();
+    throw err;
+  }
   revalidatePath(`/documents/${parsedId.data}`);
   revalidatePath('/');
   return { ok: true as const, title: parsedTitle.data };
@@ -33,8 +43,13 @@ export async function saveDoc(id: string, content: unknown) {
   const shape = zTiptapDoc.safeParse(content);
   if (!shape.success) return { ok: false as const, error: 'Invalid document content' };
 
-  // Persist the ORIGINAL content object (not the parsed result) so nothing is stripped.
-  await svc.saveDocumentContent(parsedId.data, user.id, content);
+  try {
+    // Persist the ORIGINAL content object (not the parsed result) so nothing is stripped.
+    await svc.saveDocumentContent(parsedId.data, user.id, content);
+  } catch (err) {
+    if (err instanceof NotFoundError) return notFoundResult();
+    throw err;
+  }
   return { ok: true as const, savedAt: new Date().toISOString() };
 }
 
@@ -43,7 +58,12 @@ export async function deleteDoc(id: string) {
   const parsedId = zUuid.safeParse(id);
   if (!parsedId.success) return { ok: false as const, error: 'Invalid document id' };
 
-  await svc.deleteDocumentForUser(parsedId.data, user.id);
+  try {
+    await svc.deleteDocumentForUser(parsedId.data, user.id);
+  } catch (err) {
+    if (err instanceof NotFoundError) return notFoundResult();
+    throw err;
+  }
   revalidatePath('/');
   redirect('/');
 }
