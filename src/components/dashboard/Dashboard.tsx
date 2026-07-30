@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Plus, FileText, LogOut, Menu, X, ChevronRight } from 'lucide-react';
+import { Plus, FileText, LogOut, Menu, X, ChevronRight, Trash2 } from 'lucide-react';
 import { createDoc } from '@/app/actions/documents';
 import { signOut } from '@/app/actions/auth';
 import { Logo } from '@/components/brand/Logo';
@@ -108,6 +108,13 @@ export function Dashboard({ user, owned, shared }: { user: User; owned: Doc[]; s
             )}
           </section>
         </nav>
+
+        <Link href="/trash" className="dl-side-row dl-side-trash">
+          <Trash2 size={15} className="fico" />
+          <span className="txt">
+            <span className="title">Trash</span>
+          </span>
+        </Link>
 
         <div className="dl-side-user">
           <Avatar id={user.id} name={user.name} size={30} />

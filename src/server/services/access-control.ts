@@ -26,5 +26,9 @@ export async function requireDocAccess(
   const role = effectiveRole(access, userId);
   if (!meetsRank(role, min)) throw new NotFoundError();
 
+  // A soft-deleted document is invisible to everyone except its owner (who
+  // needs access to restore it via the trash view).
+  if (access.deletedAt && role !== 'owner') throw new NotFoundError();
+
   return { role: role as EffectiveRole };
 }
