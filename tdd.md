@@ -9,6 +9,30 @@
 
 ## Amendment Log
 
+**2026-07-30 — Data model: introduce workspaces.** The original locked data
+model (§5) has no team/workspace concept — every document is a flat row
+owned by one user, and sharing is a per-document email grant with no
+organizational structure (§6, §7.5). The project is evolving toward
+supporting teams, and documents need to be grouped by workspace rather than
+listed flat on the dashboard (tracked as GitHub issues #22/#23/#25).
+Decision: add `workspaces` and `workspace_members` tables using the exact
+`documents`/`document_shares` idiom already locked in §5 (ownership
+implicit via `owner_id`, never an owner row in the members table; role
+rank `owner > admin > member`), give every user a personal workspace at
+signup, and add `documents.workspace_id` (backfilled via a two-step
+migration — see §5). **Workspace membership is organizational only — it is
+NOT a new access-control boundary.** `requireDocAccess` (§9.1) and
+per-document sharing by email (§7.5) are unchanged; a document's
+`workspace_id` only affects dashboard grouping and who may *create*
+documents in that workspace. Investigation note: issue #25's original
+premise (sharing "capped at 4 hardcoded seed users") was already resolved
+by the 2026-07-28 auth amendment below — `sharingService` has looked up any
+real user by email since then. #25 is reinterpreted as a workspace-member
+picker added on top of the existing (unchanged) email-based sharing flow.
+§5, §6, and a new §7.7 are updated below to describe the current model.
+
+---
+
 **2026-07-28 — Auth: seeded pick-login → real email/password.** The original
 locked decision (§2 "Out of scope", §3 stack table, §7.1) was that auth would
 be a demo-only seeded pick-login with no credentials, appropriate for the
@@ -264,6 +288,58 @@ WHERE d.id = $docId;
 
 **Seeded users** live in code (`src/lib/users.ts`) AND are inserted into the `users` table by `scripts/seed.ts` so FKs resolve. Fixed UUIDs so `users.ts` ids match DB rows.
 
+### 5.1 Amendment (2026-07-30) — Workspaces
+
+New tables, same idiom as `documents`/`document_shares` above (implicit
+owner, never an owner row in the members table):
+
+```ts
+export const workspaces = pgTable('workspaces', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  ownerId: uuid('owner_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const workspaceMembers = pgTable('workspace_members', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  role: text('role').notNull(),                            // 'member' | 'admin'
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  uniqMember: unique('workspace_members_ws_user_uniq').on(t.workspaceId, t.userId),
+  userIdx: index('workspace_members_user_idx').on(t.userId),
+  roleCheck: check('workspace_members_role_check', sql`${t.role} in ('member','admin')`),
+}));
+```
+
+Effective rank: `owner(3) > admin(2) > member(1)` — computed the same way
+as document effective role, in a parallel pure module
+(`src/lib/workspaceAccess.ts`) so it stays unit-testable without a DB,
+exactly like `src/lib/access.ts`.
+
+`documents` gets `workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' })`.
+Existing rows have no workspace, so this ships as a **two-step, out-of-band
+migration** (never in the Vercel build, per the non-negotiables):
+1. Migration A adds `workspace_id` as **nullable**.
+2. `scripts/backfill-workspaces.ts` runs once: for every distinct document
+   owner with `workspace_id IS NULL`, find-or-create that user's personal
+   workspace and bulk-assigns their documents to it.
+3. Migration B alters the column to **NOT NULL**.
+
+Every user gets a personal workspace automatically at signup (and the 4
+seed users get one each via `scripts/seed.ts`, plus all four are members of
+one shared "DocsLite Demo" workspace so the sharing demo has somewhere to
+switch to). **Workspace membership does not gate document access** —
+`requireDocAccess` and per-document sharing are unaffected; a document's
+`workspace_id` only determines dashboard grouping and who may create new
+documents in that workspace (`requireWorkspaceAccess(..., 'member')`).
+"Shared with me" deliberately stays **un-scoped** by workspace — sharing
+isn't workspace-gated, so scoping it would risk a document silently
+vanishing from every workspace tab for a recipient who isn't a member of
+the sharer's workspace.
+
 ---
 
 ## 6. API / Server Surface
@@ -289,6 +365,30 @@ All mutations are **Server Actions** except file upload (route handler for multi
 **Zod shared types:** `role = z.enum(['viewer','editor'])`; `email = z.string().email()`; `TiptapJson = z.object({ type: z.literal('doc'), content: z.array(z.any()).optional() })` (shape guard, not full schema).
 
 `shareDoc` rejects sharing to self (`target === owner_id`) and to a non-existent email with a clear validation error. Returns generic **notFound** (not 403) on unauthorized access to avoid existence leakage.
+
+### 6.1 Amendment (2026-07-30) — Workspace actions
+
+| Method / Kind | Path or Action | Purpose | Auth / permission check | Input (Zod) | Output |
+|---|---|---|---|---|---|
+| Action | `createWorkspace(name)` | New workspace (owner=me) | authenticated | `{ name: string(1..100) }` | `{ ok, id }` |
+| Server load | `listMyWorkspaces()` | Workspaces I own or belong to | `getCurrentUser()` | — | `{ workspaces: [{id,name,role}] }` |
+| Action | `inviteMember(workspaceId,email,role)` | Grant/upsert membership | `requireWorkspaceAccess(id, me, 'admin')` | `{ workspaceId: uuid, email, role }` | `{ ok, members[] }` |
+| Action | `changeMemberRole(workspaceId,userId,role)` | Change member role | `requireWorkspaceAccess(id, me, 'admin')` | `{ workspaceId, userId, role }` | `{ ok, members[] }` |
+| Action | `removeMember(workspaceId,userId)` | Remove member | `requireWorkspaceAccess(id, me, 'admin')` | `{ workspaceId: uuid, userId: uuid }` | `{ ok, members[] }` |
+| Server load | `listMembers(workspaceId)` | Who's in the workspace | `requireWorkspaceAccess(id, me, 'member')` | `{ workspaceId: uuid }` | `{ members: [{userId,name,email,role}] }` |
+| Action | `setActiveWorkspace(workspaceId)` | Which workspace the dashboard/createDoc/upload use | `requireWorkspaceAccess(id, me, 'member')` | `{ workspaceId: uuid }` | sets `docs_active_workspace` cookie |
+
+`createDoc()` and `POST /api/upload` are **unchanged in signature** — both
+now read the active workspace from the `docs_active_workspace` cookie
+server-side (re-validating membership before use, same "never trust client
+input" posture as identity-from-session-cookie) rather than taking a new
+parameter, so no existing call site needs to thread a workspace id through
+props.
+
+`inviteMember` rejects self-invite (already owner) and a non-existent
+email, same shape as `shareDoc`. Workspace role rank legend: **member** =
+belong + create documents, **admin** = also invite/remove/change roles,
+**owner** = implicit, same as document ownership.
 
 ---
 
@@ -369,6 +469,38 @@ All mutations are **Server Actions** except file upload (route handler for multi
 - [ ] Create → format → share → hard refresh → content + share survive from DB.
 - [ ] No reliance on localStorage/optimistic-only state.
 - [ ] Persist failure surfaces a toast; never a false "Saved".
+
+---
+
+### 7.7 Workspaces (added 2026-07-30 — see Amendment Log)
+
+**Behavior:** Every user has a personal workspace, auto-created at signup
+(name `"{name}'s Workspace"`); the 4 seed users additionally share a
+"DocsLite Demo" workspace so the sharing demo has a multi-member workspace
+out of the box. The dashboard sidebar has a workspace switcher; the
+selected workspace is stored in a plain `docs_active_workspace` cookie
+(re-validated against real membership server-side on every read — never
+trusted blindly, same posture as every other cookie-derived value in this
+app). "My documents" is scoped to the active workspace; "Shared with me"
+is **not** — see the Amendment Log rationale.
+
+**Explicitly not a security boundary:** workspace membership only gates
+(a) who may create documents inside a workspace (`requireWorkspaceAccess(...,
+'member')`) and (b) who may manage membership (`'admin'`). It does **not**
+gate reading/editing an individual document — that's still `requireDocAccess`
+alone, unchanged, and sharing by email is still global (any real user,
+regardless of workspace).
+
+**Explicitly out of scope here:** a workspace-creation UI and a settings
+page (tracked separately, GitHub issue #24) — this batch (#22/#23/#25)
+ships the backend CRUD and the read-only switcher; users can only switch
+among workspaces they're already in.
+
+**Acceptance criteria:**
+- [ ] Every new signup gets exactly one personal workspace, owned by them.
+- [ ] Dashboard "My documents" reflects only the active workspace; switching workspaces changes what's listed without a full reload of "Shared with me".
+- [ ] Creating a document while not a member of the target workspace is denied (`NotFoundError`, not a 403 — same existence-leak posture as `requireDocAccess`).
+- [ ] `ShareDialog` offers a workspace-member picker as a convenience on top of the existing (unchanged) email-based sharing flow.
 
 ---
 
