@@ -93,6 +93,7 @@ is missing or invalid.
 | `npm run build` | Production build |
 | `npm test` | Unit tests (no DB required) |
 | `npm run test:int` | Integration tests (requires the Docker DB up) |
+| `npm run test:e2e` | Playwright e2e tests (requires the Docker DB up + migrated/seeded) |
 | `npm run db:migrate` | Apply committed SQL migrations |
 | `npm run db:seed` | Insert the 4 seeded users |
 | `npm run db:reset` | Drop & recreate the Docker DB volume |
@@ -128,13 +129,22 @@ kept literal. Use the **Upload .txt / .md** button in the sidebar.
 ## Testing
 
 ```bash
-npm test         # 21 unit tests — access control, upload parsing, validation
-npm run test:int # 11 integration tests — real Postgres: CRUD, persistence, sharing
+npm test         # unit tests — access control, upload parsing, validation, search text extraction, etc. (no DB)
+npm run test:int # integration tests — real Postgres: CRUD, persistence, sharing, workspaces
+npm run test:e2e # Playwright — full browser happy path against a real Postgres + running dev server
 ```
 
 The most important test is `tests/access.test.ts`, which locks the access-control
 invariant (owner/editor/viewer/stranger/revoked). Integration tests prove the
 full document and sharing lifecycle against a real database.
+
+`test:e2e` needs the Docker DB up, migrated, and seeded (`docker compose up -d
+&& npm run db:migrate && npm run db:seed`) — it drives a real Chromium browser
+through `npm run dev` and exercises `tests/e2e/happy-path.spec.ts`: sign in as
+a seeded user, create a document, type content and confirm autosave, share it
+with another seeded user as editor, confirm they can view/edit it, demote them
+to viewer and confirm access drops accordingly, then clean up. First run
+`npx playwright install chromium` to download the browser binary.
 
 ## Project structure
 
