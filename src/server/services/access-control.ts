@@ -1,14 +1,9 @@
 import 'server-only';
 import { effectiveRole, meetsRank, type EffectiveRole } from '@/lib/access';
 import { getDocAccess } from '@/server/repositories/documentRepo';
+import { NotFoundError } from './errors';
 
-/** Thrown on any denied or missing document. Generic on purpose (no existence leak). */
-export class NotFoundError extends Error {
-  constructor() {
-    super('Not found');
-    this.name = 'NotFoundError';
-  }
-}
+export { NotFoundError };
 
 /**
  * The single authorization door. Loads the document's owner + shares, computes

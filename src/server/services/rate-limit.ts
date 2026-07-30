@@ -49,6 +49,7 @@ export function createRateLimiter(rule: RateLimitRule) {
 
 // Per-action limiters. Kept in one place so thresholds are easy to audit/tune.
 export const shareRateLimit = createRateLimiter({ limit: 20, windowMs: 60_000 });
+export const workspaceMemberRateLimit = createRateLimiter({ limit: 20, windowMs: 60_000 });
 export const uploadRateLimit = createRateLimiter({ limit: 10, windowMs: 60_000 });
 export const imageUploadRateLimit = createRateLimiter({ limit: 20, windowMs: 60_000 });
 // Autosave (saveDoc) fires every ~750ms while typing — ~80/min of normal,
