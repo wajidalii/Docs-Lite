@@ -89,6 +89,20 @@ describe('parseUpload — markdown', () => {
     expect(findText(tables[0], '2')).toBeTruthy();
   });
 
+  it('parses `- [ ]` / `- [x]` into taskList/taskItem nodes with checked state', () => {
+    const { content } = parseUpload('todo.md', '- [ ] first\n- [x] second\n');
+
+    const taskLists = findAll(content as Node, 'taskList');
+    expect(taskLists).toHaveLength(1);
+
+    const items = findAll(taskLists[0], 'taskItem');
+    expect(items).toHaveLength(2);
+    expect(items[0].attrs?.checked).toBe(false);
+    expect(items[1].attrs?.checked).toBe(true);
+    expect(findText(taskLists[0], 'first')).toBeTruthy();
+    expect(findText(taskLists[0], 'second')).toBeTruthy();
+  });
+
   it('turns an empty / whitespace-only markdown file into a valid mountable doc', () => {
     const { content } = parseUpload('empty.md', '   \n\n  ');
     expect(content.type).toBe('doc');

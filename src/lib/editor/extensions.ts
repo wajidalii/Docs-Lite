@@ -2,6 +2,8 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Link from '@tiptap/extension-link';
 import { TableKit } from '@tiptap/extension-table';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
 
 // The SINGLE shared extensions array. Both the client editor and the server-side
 // markdown/upload parser MUST use this exact set so content round-trips without
@@ -24,6 +26,8 @@ export const extensions = [
   TableKit.configure({
     table: { resizable: true },
   }),
+  TaskList,
+  TaskItem.configure({ nested: true }),
 ];
 
 // Client-editor-only composition: adds the Placeholder view decoration on top
