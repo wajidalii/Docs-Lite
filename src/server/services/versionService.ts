@@ -1,4 +1,5 @@
 import 'server-only';
+import { extractText } from '@/lib/editor/extractText';
 import * as repo from '@/server/repositories/documentRepo';
 import * as versionRepo from '@/server/repositories/versionRepo';
 import { NotFoundError, requireDocAccess } from './access-control';
@@ -26,5 +27,5 @@ export async function restoreVersionForUser(docId: string, userId: string, versi
   if (!doc) throw new NotFoundError();
 
   await versionRepo.insertVersion(docId, userId, doc.content);
-  await repo.updateContent(docId, version.content);
+  await repo.updateContent(docId, version.content, extractText(version.content));
 }

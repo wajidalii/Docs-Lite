@@ -12,6 +12,7 @@ import { Avatar } from '@/components/brand/Avatar';
 import { EmptyMotif } from '@/components/brand/EmptyMotif';
 import { showToast } from '@/lib/toast';
 import { UploadButton } from './UploadButton';
+import { SearchBox } from './SearchBox';
 
 type Role = 'owner' | 'editor' | 'viewer';
 type Doc = { id: string; title: string; timeLabel: string; role: Role };
@@ -177,6 +178,7 @@ export function Dashboard({
 
       {/* workspace */}
       <main className="dl-work">
+        <SearchBox />
         {all.length === 0 ? (
           <div className="dl-empty-wrap">
             <EmptyMotif />

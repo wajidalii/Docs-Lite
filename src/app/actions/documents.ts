@@ -4,13 +4,24 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { requireUser } from '@/lib/session';
 import { resolveActiveWorkspaceId } from '@/lib/activeWorkspace';
-import { zTiptapDoc, zTitle, zUuid } from '@/lib/validation';
+import { zSearchQuery, zTiptapDoc, zTitle, zUuid } from '@/lib/validation';
 import * as svc from '@/server/services/documentService';
 import { NotFoundError } from '@/server/services/access-control';
 import { RateLimitError } from '@/server/services/rate-limit';
+import type { SearchResult } from '@/server/repositories/documentRepo';
 
 function notFoundResult() {
   return { ok: false as const, error: 'Document not found' };
+}
+
+export type SearchDocsResult = { ok: true; results: SearchResult[] } | { ok: false; error: string };
+
+export async function searchDocs(query: string): Promise<SearchDocsResult> {
+  const user = await requireUser();
+  const parsed = zSearchQuery.safeParse(query);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  const results = await svc.searchDocuments(user.id, parsed.data);
+  return { ok: true, results };
 }
 
 export async function createDoc() {
