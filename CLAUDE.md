@@ -4,12 +4,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Ajaia Take-Home — DocsLite Collaborative Doc Editor
 
-This repo is a **single** timed take-home for **Ajaia LLC — "AI-Native Full Stack
-Developer"**. There is one assignment: build a lightweight collaborative document
-editor (Google-Docs-lite), deployed live. Everything in this repo serves that one
-build. The role is an AI-orchestration role — using AI end-to-end is expected and
-graded, not cheating. Goal: a fully working, verified, deployed slice with clean
-docs.
+This repo started as a **single** timed take-home for **Ajaia LLC —
+"AI-Native Full Stack Developer"**: build a lightweight collaborative
+document editor (Google-Docs-lite), deployed live. The role is an
+AI-orchestration role — using AI end-to-end is expected and graded, not
+cheating. Goal: a fully working, verified, deployed slice with clean docs.
+
+**Ongoing product evolution (since 2026-07-28, see tdd.md's Amendment Log):**
+the project is now also being developed as an ongoing product beyond the
+original take-home timebox, tracked via GitHub issues (`gh issue list`) and
+built one issue per PR (see "Git / GitHub workflow" below). This doesn't
+replace the take-home context above — the original deliverables (README,
+architecture note, AI-workflow note, SUBMISSION.md, live URL, walkthrough
+video, seeded/test-user creds) are still owed and still the baseline `tdd.md`
+describes. Treat `tdd.md` as locked for what it locks, and extend it via its
+Amendment Log (never silently diverge) when the product evolves past what it
+originally scoped — see the workspaces amendment (2026-07-30) for the
+pattern to follow.
 
 ## Source of truth
 
@@ -24,16 +35,24 @@ docs.
 ## Locked stack (see tdd.md §3 for full table + versions)
 
 Single **Next.js 16 App Router (TS)** app — frontend + backend via Server Actions
-+ route handlers — on **Vercel free**. **Drizzle ORM** + `@neondatabase/serverless`
-→ **Neon** Postgres. Editor **Tiptap v3** (StarterKit already includes Underline).
++ route handlers — on **Vercel free**. **Drizzle ORM** via the plain `pg`
+driver (`drizzle-orm/node-postgres`) → **Neon** Postgres in production, the
+same driver against local Docker Postgres in dev (one connection-string env
+var is the only difference). Wiring `@neondatabase/serverless`'s
+edge-optimized driver instead is a tracked-but-optional future optimization
+(GitHub issue #53), not a blocker — the app is already deployed and working
+on the plain driver. Editor **Tiptap v3** (StarterKit already includes Underline).
 Content stored as **jsonb** (Tiptap JSON). Auth = **iron-session** session
 cookie + real email/password (Node `crypto.scrypt` hashing) — see tdd.md's
 Amendment Log (2026-07-28); originally a seeded pick-login with no
 credentials, now real signup/login while keeping the 4 seeded demo users
 (with a documented password) for the sharing demo. Upload `.txt`/`.md` via
 **`@tiptap/markdown`**. Validation **Zod**.
-Styling Tailwind v4 + shadcn/ui. Tests **Vitest** (⭐ meaningful test =
-access-control logic).
+Styling Tailwind v4 + shadcn/ui (adopted 2026-07-31, GitHub issue #9 —
+incremental: `Button`/`Input`/`Dialog` + `ShareDialog`/`LoginForm` migrated so
+far, most components are still the original hand-built `.dl-*` design
+system; see `components.json` and `src/components/ui/`). Tests **Vitest**
+(⭐ meaningful test = access-control logic).
 
 ## Non-negotiables (from the risk analysis — violating these breaks the app)
 
@@ -109,11 +128,14 @@ Client Component
 - **Env guard** (`src/lib/env.ts`) Zod-validates `DATABASE_URL` /
   `SESSION_PASSWORD` at import time and throws a named error, so misconfig
   fails fast instead of surfacing as an opaque 500.
-- **Local vs. locked deploy target**: the app currently runs against the
-  Dockerized Postgres via the plain `pg` driver (deployment is deferred — see
-  README "Deployment" and `tdd.md` §13.B). Wiring `@neondatabase/serverless` /
-  Neon-specific pooling happens only when the deploy step is actually built;
-  don't assume it's already present.
+- **Deploy target**: deployed on Vercel against Neon Postgres, via the plain
+  `pg` driver — the same driver and connection code as local Docker Postgres,
+  just a different `DATABASE_URL` (see README "Deployment" and `tdd.md`
+  §13.B). Migrations are applied out-of-band against whichever database
+  `DATABASE_URL` points at; never assume they've been run — check before
+  relying on new schema. Wiring `@neondatabase/serverless`'s edge-optimized
+  driver instead is a separate, optional future step (GitHub issue #53), not
+  a precondition for the app being live.
 
 ## How we work
 

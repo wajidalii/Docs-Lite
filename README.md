@@ -1,24 +1,37 @@
 # DocsLite — a lightweight collaborative document editor
 
 A Google-Docs-lite app: create, edit, and format rich-text documents, upload
-`.txt`/`.md` files into new documents, and share documents with other users
-(viewer/editor roles). Built as a single **Next.js 16** app (frontend + backend
-via Server Actions and route handlers) on **Postgres**, run locally with Docker.
+`.txt`/`.md` files into new documents, organize them into workspaces, and share
+documents with other users (viewer/editor roles). Built as a single
+**Next.js 16** app (frontend + backend via Server Actions and route handlers)
+on **Postgres**.
 
-> Built for the Ajaia "AI-Native Full Stack Developer" take-home. See
+> Started as the Ajaia "AI-Native Full Stack Developer" take-home and is now
+> being evolved as an ongoing product beyond that original scope (see
+> `tdd.md`'s Amendment Log for what's changed and why). See
 > [`AI_WORKFLOW.md`](./AI_WORKFLOW.md) for how AI was used, [`ARCHITECTURE.md`](./ARCHITECTURE.md)
 > for design decisions, and [`tdd.md`](./tdd.md) for the full technical design.
 
 ## Features
 
-- **Documents** — create, rename (inline), edit, autosave, reopen, delete.
-- **Rich text** — bold, italic, underline, H1/H2/H3 + paragraph, bulleted &
-  numbered lists (Tiptap). Content is stored as JSON and round-trips losslessly.
+- **Documents** — create, rename (inline), edit, autosave, reopen, soft-delete
+  with a trash/restore view.
+- **Rich text** — bold, italic, underline, links, headings + paragraph,
+  bulleted/numbered/task lists, tables, images, syntax-highlighted code
+  blocks, and a Notion-style `/` slash-command menu (Tiptap). Content is
+  stored as JSON and round-trips losslessly.
+- **Version history** — periodic autosave snapshots plus a manual restore
+  (which itself snapshots the pre-restore state first, so nothing is lost).
 - **File upload** — upload a `.txt` or `.md` file to create a new editable
   document. Markdown formatting is parsed; plain text stays literal.
+- **Workspaces** — every user gets a personal workspace at signup; documents
+  are grouped by workspace with a dashboard switcher. Organizational only —
+  it doesn't gate document-level access.
 - **Sharing** — a document owner grants another user access as **viewer** or
-  **editor**, can change roles, and can revoke. The dashboard splits
-  **My Documents** vs **Shared with me**.
+  **editor**, can change roles, and can revoke, with a workspace-member picker
+  for convenience. The dashboard splits **My Documents** vs **Shared with me**.
+- **Full-text search** — search title + body across every document you can
+  access (Postgres `tsvector`, ranked).
 - **Access control** — every read/write is authorized server-side through a
   single door; a user can never touch a document they don't own or aren't
   shared on (no IDOR).
@@ -28,14 +41,15 @@ via Server Actions and route handlers) on **Postgres**, run locally with Docker.
 | Concern | Choice |
 |---|---|
 | Framework | Next.js 16 (App Router, TypeScript) — one app, FE + BE |
-| Database | Postgres (local via Docker; `pg` driver, deploy-ready for Neon) |
+| Database | Postgres — Dockerized locally, Neon in production (`pg` driver, same connection code both places) |
 | ORM / migrations | Drizzle ORM + drizzle-kit |
-| Editor | Tiptap v3 (StarterKit) — content stored as JSON in `jsonb` |
+| Editor | Tiptap v3 (StarterKit + Link/Table/TaskList/Image/CodeBlockLowlight/slash-command) — content stored as JSON in `jsonb` |
 | Auth | iron-session (encrypted cookie) + email/password (Node `crypto.scrypt`) |
 | Upload parsing | `@tiptap/markdown` (server-side, no DOM) |
 | Validation | Zod (shared client + server) |
+| Components | shadcn/ui (Radix) — incremental adoption; `Button`/`Input`/`Dialog` migrated so far, most components are still the original hand-built design system |
 | Styling | Tailwind CSS v4 (`@theme` tokens) + custom design system; Instrument Sans / Source Serif 4 / Instrument Serif via `next/font`; `sonner` toasts |
-| Tests | Vitest (unit) + Vitest integration against real Postgres |
+| Tests | Vitest (unit + integration against real Postgres) + Playwright (e2e) |
 
 ## Design
 
@@ -95,7 +109,9 @@ is missing or invalid.
 | `npm run test:int` | Integration tests (requires the Docker DB up) |
 | `npm run test:e2e` | Playwright e2e tests (requires the Docker DB up + migrated/seeded) |
 | `npm run db:migrate` | Apply committed SQL migrations |
-| `npm run db:seed` | Insert the 4 seeded users |
+| `npm run db:seed` | Insert the 4 seeded users (+ their personal workspaces + a shared demo workspace) |
+| `npm run db:backfill-workspaces` | One-off: assign pre-workspaces documents to a personal workspace. Only needed when upgrading a database created before workspaces existed — a fresh setup doesn't need this |
+| `npm run db:backfill-search-text` | One-off: populate the full-text search index for documents that existed before search shipped. Same "only for upgrading an existing database" caveat |
 | `npm run db:reset` | Drop & recreate the Docker DB volume |
 
 ## Seeded demo users
@@ -165,21 +181,33 @@ screenshots/               # UI screenshots
 
 ## Deployment
 
-Deployment is intentionally **deferred** for this submission — the app runs
-locally against Dockerized Postgres. It is **deploy-ready**: all config is
-env-driven and the `pg` driver also connects to a managed Postgres (e.g. Neon),
-so shipping to Vercel later is a configuration step, not a rewrite. See
-[`ARCHITECTURE.md`](./ARCHITECTURE.md) and `tdd.md` §13.B.
+The app is deployed to **Vercel** against a **Neon** Postgres database — the
+live URL is a separate deliverable (see `CLAUDE.md`'s Deliverables map), not
+duplicated here. It currently uses the plain `pg` driver against Neon's pooled
+connection string (no code changes needed vs. local Docker Postgres — same
+schema, same driver, just a different `DATABASE_URL`). Wiring
+`@neondatabase/serverless`'s edge-optimized driver as a further optimization
+is tracked separately (GitHub issue #53) and isn't required for the app to be
+live. **Migrations are run out-of-band** (`npm run db:migrate`, plus the
+one-off backfill scripts above when upgrading an existing database) — never
+as part of the Vercel build. See [`ARCHITECTURE.md`](./ARCHITECTURE.md) and
+`tdd.md` §13.B/§5.1.
 
 ## Scope
 
-**Built:** documents CRUD + rich-text editor + autosave, `.txt`/`.md` upload,
-sharing with roles + revoke, persistence, server-side access control, validation
-& error handling, automated tests.
+**Built:** documents CRUD + rich-text editor (formatting, links, tables,
+images, code blocks, task lists, slash-command menu) + autosave + soft-delete
+with trash/restore, version history, `.txt`/`.md` upload, workspaces, sharing
+with roles + revoke + a workspace-member picker, full-text search, deployment
+to Vercel + Neon, server-side access control, validation & error handling,
+unit + integration + e2e tests.
 
-**Deliberately cut** (with reasons in `tdd.md` §2): real-time multiplayer/CRDT,
-production auth (passwords/OAuth), `.docx` import, file archival/storage,
-comments, version history, deployment.
+**Deliberately cut** (with reasons in `tdd.md` §2, and see its Amendment Log
+for what's since been reconsidered): real-time multiplayer/CRDT (tracked as
+GitHub issue #27 — needs an external hosted WebSocket service Vercel
+serverless can't provide on its own), inline comments/annotations, `.docx`
+import, file archival/storage.
 
-**With more time:** `.docx` import, real auth, real-time collaboration (Yjs),
-comments & version history, deployment to Vercel + Neon.
+**With more time:** `.docx` import, real-time collaboration (Yjs), comments,
+public share links, a command palette, and the rest of the open GitHub issue
+backlog.
