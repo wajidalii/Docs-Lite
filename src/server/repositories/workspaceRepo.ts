@@ -16,6 +16,15 @@ export async function insertWorkspace(ownerId: string, name: string): Promise<st
   return row.id;
 }
 
+export async function getWorkspaceById(id: string) {
+  const [row] = await db.select().from(workspaces).where(eq(workspaces.id, id));
+  return row ?? null;
+}
+
+export async function renameWorkspace(id: string, name: string) {
+  await db.update(workspaces).set({ name }).where(eq(workspaces.id, id));
+}
+
 /** Owner id + all member rows, used to compute effective role. */
 export async function getWorkspaceAccess(id: string): Promise<WorkspaceAccessRow | null> {
   const [ws] = await db.select({ ownerId: workspaces.ownerId }).from(workspaces).where(eq(workspaces.id, id));

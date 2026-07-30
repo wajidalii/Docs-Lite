@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, FileText, LogOut, Menu, X, ChevronRight, Trash2 } from 'lucide-react';
+import { Plus, FileText, LogOut, Menu, X, ChevronRight, Trash2, Settings } from 'lucide-react';
 import { createDoc } from '@/app/actions/documents';
 import { setActiveWorkspace } from '@/app/actions/workspaces';
 import { signOut } from '@/app/actions/auth';
@@ -76,8 +76,8 @@ export function Dashboard({
           </button>
         </div>
 
-        {workspaces.length > 1 && (
-          <div className="dl-side-ws-switcher">
+        <div className="dl-side-ws-switcher">
+          {workspaces.length > 1 && (
             <select
               className="dl-field"
               value={activeWorkspaceId}
@@ -91,8 +91,11 @@ export function Dashboard({
                 </option>
               ))}
             </select>
-          </div>
-        )}
+          )}
+          <Link href={`/workspaces/${activeWorkspaceId}`} className="dl-icon-btn" aria-label="Workspace settings">
+            <Settings size={16} />
+          </Link>
+        </div>
 
         <div className="dl-side-actions">
           <form action={createDoc}>
