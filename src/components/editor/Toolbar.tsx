@@ -2,7 +2,20 @@
 
 import type { ReactNode } from 'react';
 import type { Editor } from '@tiptap/react';
-import { Bold, Italic, Underline, List, ListOrdered, Link2, Check, AlertCircle } from 'lucide-react';
+import {
+  Bold,
+  Italic,
+  Underline,
+  List,
+  ListOrdered,
+  Link2,
+  Table,
+  Columns3,
+  Rows3,
+  Trash2,
+  Check,
+  AlertCircle,
+} from 'lucide-react';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -99,6 +112,35 @@ export function Toolbar({ editor, status }: { editor: Editor; status: SaveStatus
       <Btn label="Link" active={editor.isActive('link')} onClick={setLink}>
         <Link2 size={16} />
       </Btn>
+
+      <span className="dl-tb-sep" />
+
+      <Btn
+        label="Insert table"
+        active={false}
+        onClick={() => c().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+      >
+        <Table size={16} />
+      </Btn>
+      {editor.isActive('table') && (
+        <>
+          <Btn label="Add column after" active={false} onClick={() => c().addColumnAfter().run()}>
+            <Columns3 size={16} />
+          </Btn>
+          <Btn label="Delete column" active={false} onClick={() => c().deleteColumn().run()}>
+            <Columns3 size={16} strokeWidth={1} />
+          </Btn>
+          <Btn label="Add row after" active={false} onClick={() => c().addRowAfter().run()}>
+            <Rows3 size={16} />
+          </Btn>
+          <Btn label="Delete row" active={false} onClick={() => c().deleteRow().run()}>
+            <Rows3 size={16} strokeWidth={1} />
+          </Btn>
+          <Btn label="Delete table" active={false} onClick={() => c().deleteTable().run()}>
+            <Trash2 size={16} />
+          </Btn>
+        </>
+      )}
 
       <span className="dl-tb-sep" />
 
