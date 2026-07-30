@@ -10,6 +10,7 @@ import {
   ListOrdered,
   ListTodo,
   Link2,
+  Code2,
   Image as ImageIcon,
   Table,
   Columns3,
@@ -21,6 +22,19 @@ import {
 import { showToast } from '@/lib/toast';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+const CODE_LANGUAGES = [
+  { value: 'plaintext', label: 'Plain text' },
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'typescript', label: 'TypeScript' },
+  { value: 'python', label: 'Python' },
+  { value: 'json', label: 'JSON' },
+  { value: 'bash', label: 'Bash' },
+  { value: 'css', label: 'CSS' },
+  { value: 'xml', label: 'HTML/XML' },
+  { value: 'sql', label: 'SQL' },
+  { value: 'yaml', label: 'YAML' },
+];
 
 function Btn({
   onClick,
@@ -157,6 +171,24 @@ export function Toolbar({ editor, status, docId }: { editor: Editor; status: Sav
         {uploadingImage ? <span className="dl-spinner" style={{ width: 14, height: 14 }} /> : <ImageIcon size={16} />}
       </Btn>
       <input ref={imageInputRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden onChange={onImageChosen} />
+
+      <Btn label="Code block" active={editor.isActive('codeBlock')} onClick={() => c().toggleCodeBlock().run()}>
+        <Code2 size={16} />
+      </Btn>
+      {editor.isActive('codeBlock') && (
+        <select
+          className="dl-tb-select"
+          aria-label="Code block language"
+          value={(editor.getAttributes('codeBlock').language as string | null) ?? 'plaintext'}
+          onChange={(e) => c().updateAttributes('codeBlock', { language: e.target.value }).run()}
+        >
+          {CODE_LANGUAGES.map((lang) => (
+            <option key={lang.value} value={lang.value}>
+              {lang.label}
+            </option>
+          ))}
+        </select>
+      )}
 
       <span className="dl-tb-sep" />
 

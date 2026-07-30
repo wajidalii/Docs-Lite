@@ -115,6 +115,14 @@ describe('parseUpload — markdown', () => {
     expect(images[0].attrs?.alt).toBe('a diagram');
   });
 
+  it('parses a fenced code block with a language into a codeBlock node', () => {
+    const { content } = parseUpload('notes.md', '```javascript\nconst x = 1;\n```\n');
+    const codeBlocks = findAll(content as Node, 'codeBlock');
+    expect(codeBlocks).toHaveLength(1);
+    expect(codeBlocks[0].attrs?.language).toBe('javascript');
+    expect(findText(codeBlocks[0], 'const x = 1;')).toBeTruthy();
+  });
+
   it('parses `- [ ]` / `- [x]` into taskList/taskItem nodes with checked state', () => {
     const { content } = parseUpload('todo.md', '- [ ] first\n- [x] second\n');
 
