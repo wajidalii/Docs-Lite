@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, Trash2 } from 'lucide-react';
 import { renameDoc, deleteDoc } from '@/app/actions/documents';
 import { ShareDialog } from './ShareDialog';
+import { VersionHistoryDialog } from './VersionHistoryDialog';
 import { showToast } from '@/lib/toast';
 import type { EffectiveRole } from '@/lib/access';
 
@@ -26,6 +27,7 @@ export function DocumentHeader({
 }) {
   const router = useRouter();
   const isOwner = role === 'owner';
+  const canEdit = role === 'owner' || role === 'editor';
   const [title, setTitle] = useState(initialTitle);
 
   async function commitRename() {
@@ -75,6 +77,8 @@ export function DocumentHeader({
       <span className="dl-pill" data-role={role}>
         {roleLabel[role]}
       </span>
+
+      {canEdit && <VersionHistoryDialog docId={docId} docTitle={title} />}
 
       {isOwner && <ShareDialog docId={docId} docTitle={title} owner={currentUser} />}
 

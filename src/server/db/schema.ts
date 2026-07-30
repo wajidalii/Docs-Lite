@@ -67,7 +67,27 @@ export const documentImages = pgTable(
   (t) => [index('document_images_document_idx').on(t.documentId)],
 );
 
+// Periodic content snapshots (throttled, see documentService.saveDocumentContent)
+// plus an unthrottled one written right before a restore, so restoring never
+// destroys the state that preceded it.
+export const documentVersions = pgTable(
+  'document_versions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    documentId: uuid('document_id')
+      .notNull()
+      .references(() => documents.id, { onDelete: 'cascade' }),
+    content: jsonb('content').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    createdBy: uuid('created_by')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+  },
+  (t) => [index('document_versions_document_created_idx').on(t.documentId, t.createdAt)],
+);
+
 export type UserRow = typeof users.$inferSelect;
 export type DocumentRow = typeof documents.$inferSelect;
 export type DocumentShareRow = typeof documentShares.$inferSelect;
 export type DocumentImageRow = typeof documentImages.$inferSelect;
+export type DocumentVersionRow = typeof documentVersions.$inferSelect;

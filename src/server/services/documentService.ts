@@ -1,11 +1,22 @@
 import 'server-only';
 import { EMPTY_DOC } from '@/lib/editor/empty';
 import * as repo from '@/server/repositories/documentRepo';
+import * as versionRepo from '@/server/repositories/versionRepo';
 import { NotFoundError, requireDocAccess } from './access-control';
 import { autosaveRateLimit } from './rate-limit';
 
 // Business rules + authorization. Every function takes the acting userId (from
 // the session, resolved in the action) and authorizes before touching the repo.
+
+// Coarser than the ~750ms autosave debounce (Editor.tsx) on purpose, so a
+// typing session gets a handful of checkpoints instead of one row per save.
+const VERSION_SNAPSHOT_INTERVAL_MS = 5 * 60_000;
+
+async function maybeSnapshotVersion(docId: string, userId: string, content: unknown) {
+  const lastSnapshotAt = await versionRepo.getLatestVersionTime(docId);
+  if (lastSnapshotAt && Date.now() - lastSnapshotAt.getTime() < VERSION_SNAPSHOT_INTERVAL_MS) return;
+  await versionRepo.insertVersion(docId, userId, content);
+}
 
 export async function createDocument(userId: string): Promise<string> {
   return repo.insertDocument(userId, 'Untitled', EMPTY_DOC);
@@ -34,7 +45,9 @@ export async function renameDocument(docId: string, userId: string, title: strin
 export async function saveDocumentContent(docId: string, userId: string, content: unknown) {
   autosaveRateLimit(userId);
   await requireDocAccess(docId, userId, 'editor');
-  await repo.updateContent(docId, content);
+  // Run concurrently, not sequentially — the periodic snapshot check must
+  // never add latency to the autosave debounce's critical path.
+  await Promise.all([repo.updateContent(docId, content), maybeSnapshotVersion(docId, userId, content)]);
 }
 
 export async function deleteDocumentForUser(docId: string, userId: string) {
