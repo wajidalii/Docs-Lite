@@ -1,5 +1,6 @@
 'use server';
 
+import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { requireUser } from '@/lib/session';
 import { setActiveWorkspaceCookie } from '@/lib/activeWorkspace';
@@ -13,8 +14,10 @@ import { RateLimitError } from '@/server/services/rate-limit';
 export type WorkspaceMembersResult = { ok: true; members: WorkspaceMemberRow[] } | { ok: false; error: string };
 export type CreateWorkspaceResult = { ok: true; id: string } | { ok: false; error: string };
 export type SetActiveWorkspaceResult = { ok: true } | { ok: false; error: string };
+export type RenameWorkspaceResult = { ok: true; name: string } | { ok: false; error: string };
+export type LeaveWorkspaceResult = { ok: true } | { ok: false; error: string };
 
-function handleError(err: unknown): WorkspaceMembersResult {
+function handleError(err: unknown): { ok: false; error: string } {
   if (err instanceof WorkspaceError) return { ok: false, error: err.message };
   if (err instanceof NotFoundError) return { ok: false, error: 'Workspace not found' };
   if (err instanceof RateLimitError) return { ok: false, error: err.message };
@@ -118,4 +121,35 @@ export async function setActiveWorkspace(workspaceId: string): Promise<SetActive
   await setActiveWorkspaceCookie(pid.data);
   revalidatePath('/');
   return { ok: true };
+}
+
+export async function renameWorkspace(workspaceId: string, name: string): Promise<RenameWorkspaceResult> {
+  const user = await requireUser();
+  const pid = zUuid.safeParse(workspaceId);
+  const pname = zWorkspaceName.safeParse(name);
+  if (!pid.success) return { ok: false, error: 'Invalid workspace' };
+  if (!pname.success) return { ok: false, error: pname.error.issues[0].message };
+
+  try {
+    await svc.renameWorkspace(pid.data, user.id, pname.data);
+  } catch (err) {
+    return handleError(err);
+  }
+  revalidatePath(`/workspaces/${pid.data}`);
+  revalidatePath('/');
+  return { ok: true, name: pname.data };
+}
+
+export async function leaveWorkspace(workspaceId: string): Promise<LeaveWorkspaceResult> {
+  const user = await requireUser();
+  const pid = zUuid.safeParse(workspaceId);
+  if (!pid.success) return { ok: false, error: 'Invalid workspace' };
+
+  try {
+    await svc.leaveWorkspace(pid.data, user.id);
+  } catch (err) {
+    return handleError(err);
+  }
+  revalidatePath('/');
+  redirect('/');
 }
