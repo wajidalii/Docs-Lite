@@ -6,7 +6,9 @@ import { z } from 'zod';
 export const zUuid = z.uuid();
 export const zEmail = z.email();
 export const zRole = z.enum(['viewer', 'editor']);
+export const zWorkspaceRole = z.enum(['member', 'admin']);
 export const zTitle = z.string().trim().min(1, 'Title is required').max(200, 'Title is too long');
+export const zWorkspaceName = z.string().trim().min(1, 'Workspace name is required').max(100, 'Workspace name is too long');
 export const zPassword = z.string().min(8, 'Password must be at least 8 characters').max(200);
 export const zName = z.string().trim().min(1, 'Name is required').max(100, 'Name is too long');
 
@@ -22,3 +24,4 @@ export const zTiptapDoc = z.object({
 });
 
 export type Role = z.infer<typeof zRole>;
+export type WorkspaceRole = z.infer<typeof zWorkspaceRole>;

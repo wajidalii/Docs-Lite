@@ -86,8 +86,43 @@ export const documentVersions = pgTable(
   (t) => [index('document_versions_document_created_idx').on(t.documentId, t.createdAt)],
 );
 
+// Workspaces are organizational only — they group documents on the
+// dashboard and gate who may create documents / manage membership. They are
+// NOT a document-level access boundary: requireDocAccess and per-document
+// sharing by email are unaffected (tdd.md §7.7).
+export const workspaces = pgTable('workspaces', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  ownerId: uuid('owner_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const workspaceMembers = pgTable(
+  'workspace_members',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    workspaceId: uuid('workspace_id')
+      .notNull()
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    role: text('role').notNull(), // 'member' | 'admin'
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique('workspace_members_ws_user_uniq').on(t.workspaceId, t.userId),
+    index('workspace_members_user_idx').on(t.userId),
+    check('workspace_members_role_check', sql`${t.role} in ('member','admin')`),
+  ],
+);
+
 export type UserRow = typeof users.$inferSelect;
 export type DocumentRow = typeof documents.$inferSelect;
 export type DocumentShareRow = typeof documentShares.$inferSelect;
 export type DocumentImageRow = typeof documentImages.$inferSelect;
 export type DocumentVersionRow = typeof documentVersions.$inferSelect;
+export type WorkspaceRow = typeof workspaces.$inferSelect;
+export type WorkspaceMemberRow = typeof workspaceMembers.$inferSelect;
