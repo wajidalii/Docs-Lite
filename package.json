@@ -27,6 +27,7 @@
     "@tiptap/pm": "^3.29.0",
     "@tiptap/react": "^3.29.0",
     "@tiptap/starter-kit": "^3.29.0",
+    "@tiptap/suggestion": "^3.29.0",
     "drizzle-orm": "^0.45.2",
     "iron-session": "^8.0.4",
     "lowlight": "^3.3.0",

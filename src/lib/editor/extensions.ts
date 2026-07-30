@@ -7,6 +7,7 @@ import TaskItem from '@tiptap/extension-task-item';
 import Image from '@tiptap/extension-image';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { createLowlight, common } from 'lowlight';
+import { SlashCommand } from './slash-command';
 
 const lowlight = createLowlight(common);
 
@@ -38,8 +39,13 @@ export const extensions = [
   Image,
 ];
 
-// Client-editor-only composition: adds the Placeholder view decoration on top
-// of the shared schema. Placeholder contributes no nodes/marks, so it never
-// affects parsing/round-trip fidelity — kept out of `extensions` because that
-// array is also fed to the server-side MarkdownManager, which has no view.
-export const editorExtensions = [...extensions, Placeholder.configure({ placeholder: 'Start writing…' })];
+// Client-editor-only composition: adds view-only decorations/plugins on top of
+// the shared schema. Neither Placeholder nor SlashCommand contribute
+// nodes/marks, so they never affect parsing/round-trip fidelity — kept out of
+// `extensions` because that array is also fed to the server-side
+// MarkdownManager, which has no view (SlashCommand needs ReactRenderer + DOM).
+export const editorExtensions = [
+  ...extensions,
+  Placeholder.configure({ placeholder: 'Start writing…' }),
+  SlashCommand,
+];
