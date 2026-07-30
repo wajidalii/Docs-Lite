@@ -275,6 +275,14 @@ select.dl-field { cursor: pointer; }
 .dl-sheet .ProseMirror u { text-decoration: underline; }
 .dl-sheet .ProseMirror a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 .dl-sheet .ProseMirror a:hover { color: var(--color-accent-hover); }
+
+.dl-sheet .ProseMirror table { border-collapse: collapse; table-layout: fixed; width: 100%; margin: 0 0 14px; overflow: hidden; }
+.dl-sheet .ProseMirror th, .dl-sheet .ProseMirror td { border: 1px solid var(--color-line); padding: 8px 10px; vertical-align: top; box-sizing: border-box; position: relative; }
+.dl-sheet .ProseMirror th { background: var(--color-accent-tint); font-weight: 600; text-align: left; }
+.dl-sheet .ProseMirror td p, .dl-sheet .ProseMirror th p { margin: 0; }
+.dl-sheet .ProseMirror .selectedCell { background: var(--color-accent-tint); }
+.dl-sheet .ProseMirror .column-resize-handle { position: absolute; right: -2px; top: 0; bottom: -2px; width: 4px; background-color: var(--color-accent); pointer-events: none; }
+.dl-sheet .ProseMirror.resize-cursor { cursor: col-resize; }
 .dl-sheet .ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: var(--color-faint); float: left; height: 0; pointer-events: none; }
 
 /* ============================ share dialog ============================ */

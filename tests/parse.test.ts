@@ -71,6 +71,24 @@ describe('parseUpload — markdown', () => {
     expect(linkText?.marks?.some((m) => m.type === 'link')).toBe(true);
   });
 
+  it('parses a markdown table into table/tableRow/tableCell structure', () => {
+    const md = '| A | B |\n| --- | --- |\n| 1 | 2 |\n';
+    const { content } = parseUpload('table.md', md);
+
+    const tables = findAll(content as Node, 'table');
+    expect(tables).toHaveLength(1);
+
+    const headerCells = findAll(tables[0], 'tableHeader');
+    expect(headerCells).toHaveLength(2);
+    expect(findText(tables[0], 'A')).toBeTruthy();
+    expect(findText(tables[0], 'B')).toBeTruthy();
+
+    const rows = findAll(tables[0], 'tableRow');
+    expect(rows).toHaveLength(2);
+    expect(findText(tables[0], '1')).toBeTruthy();
+    expect(findText(tables[0], '2')).toBeTruthy();
+  });
+
   it('turns an empty / whitespace-only markdown file into a valid mountable doc', () => {
     const { content } = parseUpload('empty.md', '   \n\n  ');
     expect(content.type).toBe('doc');

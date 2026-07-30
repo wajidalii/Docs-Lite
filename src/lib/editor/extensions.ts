@@ -1,6 +1,7 @@
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Link from '@tiptap/extension-link';
+import { TableKit } from '@tiptap/extension-table';
 
 // The SINGLE shared extensions array. Both the client editor and the server-side
 // markdown/upload parser MUST use this exact set so content round-trips without
@@ -19,6 +20,9 @@ export const extensions = [
     openOnClick: false,
     autolink: true,
     HTMLAttributes: { rel: 'noopener noreferrer nofollow', target: '_blank' },
+  }),
+  TableKit.configure({
+    table: { resizable: true },
   }),
 ];
 
