@@ -4,6 +4,7 @@ import Link from '@tiptap/extension-link';
 import { TableKit } from '@tiptap/extension-table';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
+import Image from '@tiptap/extension-image';
 
 // The SINGLE shared extensions array. Both the client editor and the server-side
 // markdown/upload parser MUST use this exact set so content round-trips without
@@ -28,6 +29,7 @@ export const extensions = [
   }),
   TaskList,
   TaskItem.configure({ nested: true }),
+  Image,
 ];
 
 // Client-editor-only composition: adds the Placeholder view decoration on top

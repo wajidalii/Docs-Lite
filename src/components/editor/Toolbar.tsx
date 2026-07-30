@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import type { Editor } from '@tiptap/react';
 import {
   Bold,
@@ -10,6 +10,7 @@ import {
   ListOrdered,
   ListTodo,
   Link2,
+  Image as ImageIcon,
   Table,
   Columns3,
   Rows3,
@@ -17,6 +18,7 @@ import {
   Check,
   AlertCircle,
 } from 'lucide-react';
+import { showToast } from '@/lib/toast';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -70,8 +72,10 @@ function Status({ status }: { status: SaveStatus }) {
   );
 }
 
-export function Toolbar({ editor, status }: { editor: Editor; status: SaveStatus }) {
+export function Toolbar({ editor, status, docId }: { editor: Editor; status: SaveStatus; docId: string }) {
   const c = () => editor.chain().focus();
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const setLink = () => {
     const previousUrl = (editor.getAttributes('link').href as string | undefined) ?? '';
@@ -82,6 +86,38 @@ export function Toolbar({ editor, status }: { editor: Editor; status: SaveStatus
       return;
     }
     c().extendMarkRange('link').setLink({ href: url.trim() }).run();
+  };
+
+  const onImageChosen = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    if (!/^image\/(png|jpeg|gif|webp)$/.test(file.type)) {
+      showToast('error', 'Only PNG, JPEG, GIF, and WebP images are supported.');
+      return;
+    }
+    if (file.size > 4_000_000) {
+      showToast('error', 'That image is over 4MB — try a smaller one.');
+      return;
+    }
+
+    setUploadingImage(true);
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const res = await fetch(`/api/documents/${docId}/images`, { method: 'POST', body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.url) {
+        c().setImage({ src: data.url, alt: file.name }).run();
+        return;
+      }
+      showToast('error', data.error ?? 'Image upload failed. Try that file again.');
+    } catch {
+      showToast('error', 'Image upload failed. Try that file again.');
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   return (
@@ -113,6 +149,14 @@ export function Toolbar({ editor, status }: { editor: Editor; status: SaveStatus
       <Btn label="Link" active={editor.isActive('link')} onClick={setLink}>
         <Link2 size={16} />
       </Btn>
+      <Btn
+        label="Insert image"
+        active={false}
+        onClick={() => !uploadingImage && imageInputRef.current?.click()}
+      >
+        {uploadingImage ? <span className="dl-spinner" style={{ width: 14, height: 14 }} /> : <ImageIcon size={16} />}
+      </Btn>
+      <input ref={imageInputRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden onChange={onImageChosen} />
 
       <span className="dl-tb-sep" />
 
