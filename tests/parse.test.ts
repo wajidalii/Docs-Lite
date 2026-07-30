@@ -65,6 +65,12 @@ describe('parseUpload — markdown', () => {
     expect(parseUpload('My Notes.md', 'x').title).toBe('My Notes');
   });
 
+  it('round-trips [text](url) links into link marks', () => {
+    const { content } = parseUpload('notes.md', 'See [our docs](https://example.com/docs) for more.');
+    const linkText = findText(content as Node, 'our docs');
+    expect(linkText?.marks?.some((m) => m.type === 'link')).toBe(true);
+  });
+
   it('turns an empty / whitespace-only markdown file into a valid mountable doc', () => {
     const { content } = parseUpload('empty.md', '   \n\n  ');
     expect(content.type).toBe('doc');

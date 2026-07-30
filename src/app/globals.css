@@ -273,6 +273,8 @@ select.dl-field { cursor: pointer; }
 .dl-sheet .ProseMirror li p { margin: 0; }
 .dl-sheet .ProseMirror strong { font-weight: 700; }
 .dl-sheet .ProseMirror u { text-decoration: underline; }
+.dl-sheet .ProseMirror a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.dl-sheet .ProseMirror a:hover { color: var(--color-accent-hover); }
 .dl-sheet .ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: var(--color-faint); float: left; height: 0; pointer-events: none; }
 
 /* ============================ share dialog ============================ */

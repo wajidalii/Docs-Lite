@@ -16,6 +16,7 @@
     "db:reset": "docker compose down -v && docker compose up -d"
   },
   "dependencies": {
+    "@tiptap/extension-link": "^3.29.0",
     "@tiptap/extension-placeholder": "^3.29.0",
     "@tiptap/markdown": "^3.29.0",
     "@tiptap/pm": "^3.29.0",
