@@ -3,6 +3,8 @@
 import { useState, type FormEvent } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { signIn } from '@/app/actions/auth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -23,9 +25,9 @@ export function LoginForm() {
     <form className="dl-auth-form" onSubmit={onSubmit}>
       <div className="dl-auth-field">
         <label htmlFor="login-email">Email</label>
-        <input
+        <Input
           id="login-email"
-          className={`dl-field${error ? ' is-error' : ''}`}
+          aria-invalid={!!error}
           type="email"
           autoComplete="email"
           required
@@ -35,9 +37,9 @@ export function LoginForm() {
       </div>
       <div className="dl-auth-field">
         <label htmlFor="login-password">Password</label>
-        <input
+        <Input
           id="login-password"
-          className={`dl-field${error ? ' is-error' : ''}`}
+          aria-invalid={!!error}
           type="password"
           autoComplete="current-password"
           required
@@ -50,9 +52,9 @@ export function LoginForm() {
           <AlertCircle size={14} /> {error}
         </p>
       )}
-      <button type="submit" className="dl-btn-primary" disabled={busy}>
+      <Button type="submit" disabled={busy}>
         {busy ? <span className="dl-spinner" /> : 'Sign in'}
-      </button>
+      </Button>
     </form>
   );
 }
