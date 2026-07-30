@@ -3,6 +3,7 @@ import { EMPTY_DOC } from '@/lib/editor/empty';
 import * as repo from '@/server/repositories/documentRepo';
 import * as versionRepo from '@/server/repositories/versionRepo';
 import { NotFoundError, requireDocAccess } from './access-control';
+import { requireWorkspaceAccess } from './workspace-access-control';
 import { autosaveRateLimit } from './rate-limit';
 
 // Business rules + authorization. Every function takes the acting userId (from
@@ -18,16 +19,19 @@ async function maybeSnapshotVersion(docId: string, userId: string, content: unkn
   await versionRepo.insertVersion(docId, userId, content);
 }
 
-export async function createDocument(userId: string): Promise<string> {
-  return repo.insertDocument(userId, 'Untitled', EMPTY_DOC);
+export async function createDocument(userId: string, workspaceId: string): Promise<string> {
+  await requireWorkspaceAccess(workspaceId, userId, 'member');
+  return repo.insertDocument(userId, workspaceId, 'Untitled', EMPTY_DOC);
 }
 
 export async function createDocumentWithContent(
   userId: string,
+  workspaceId: string,
   title: string,
   content: unknown,
 ): Promise<string> {
-  return repo.insertDocument(userId, title, content);
+  await requireWorkspaceAccess(workspaceId, userId, 'member');
+  return repo.insertDocument(userId, workspaceId, title, content);
 }
 
 export async function getDocumentForUser(docId: string, userId: string) {
@@ -62,11 +66,15 @@ export async function restoreDocumentForUser(docId: string, userId: string) {
   await repo.restoreDocument(docId);
 }
 
-export async function listDashboard(userId: string) {
-  const [owned, shared] = await Promise.all([repo.listOwned(userId), repo.listSharedWith(userId)]);
+// "My documents" is scoped to the active workspace; "shared with me" stays
+// global — sharing isn't workspace-gated, so scoping it would risk a
+// document silently vanishing from every workspace tab for a recipient who
+// isn't a member of the sharer's workspace (tdd.md §7.7 / §5.1).
+export async function listDashboard(userId: string, workspaceId: string) {
+  const [owned, shared] = await Promise.all([repo.listOwned(userId, workspaceId), repo.listSharedWith(userId)]);
   return { owned, shared };
 }
 
-export async function listTrashForUser(userId: string) {
-  return repo.listTrash(userId);
+export async function listTrashForUser(userId: string, workspaceId: string) {
+  return repo.listTrash(userId, workspaceId);
 }

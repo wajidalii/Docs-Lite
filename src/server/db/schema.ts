@@ -21,13 +21,21 @@ export const documents = pgTable(
     ownerId: uuid('owner_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
+    // Two-step migration (0006 nullable -> scripts/backfill-workspaces.ts ->
+    // 0007 NOT NULL, see tdd.md §5.1) so existing rows get backfilled before
+    // the constraint lands. Workspace membership is organizational only
+    // (tdd.md §7.7) — it does not gate document access, only creation +
+    // dashboard grouping.
+    workspaceId: uuid('workspace_id')
+      .notNull()
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
     title: text('title').notNull().default('Untitled'),
     content: jsonb('content').notNull(), // Tiptap / ProseMirror JSON
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
-  (t) => [index('documents_owner_idx').on(t.ownerId)],
+  (t) => [index('documents_owner_idx').on(t.ownerId), index('documents_workspace_idx').on(t.workspaceId)],
 );
 
 export const documentShares = pgTable(

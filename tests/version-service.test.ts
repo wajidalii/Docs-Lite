@@ -23,6 +23,14 @@ vi.mock('@/server/repositories/versionRepo', () => ({
   listVersions: (...args: unknown[]) => listVersions(...args),
 }));
 
+// documentService.ts imports requireWorkspaceAccess (for createDocument),
+// which transitively imports workspaceRepo -> the DB client -> env
+// validation. Not exercised by the functions under test here, but the
+// import chain still needs a mock so this file runs under plain `npm test`.
+vi.mock('@/server/repositories/workspaceRepo', () => ({
+  getWorkspaceAccess: vi.fn(),
+}));
+
 const { saveDocumentContent } = await import('@/server/services/documentService');
 const { restoreVersionForUser, listVersionsForUser } = await import('@/server/services/versionService');
 const { NotFoundError } = await import('@/server/services/access-control');

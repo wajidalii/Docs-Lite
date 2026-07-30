@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireUser } from '@/lib/session';
+import { resolveActiveWorkspaceId } from '@/lib/activeWorkspace';
 import { validateUpload } from '@/lib/upload/validate';
 import { parseUpload } from '@/lib/upload/parse';
 import { createDocumentWithContent } from '@/server/services/documentService';
@@ -42,7 +43,8 @@ export async function POST(req: Request) {
 
   const text = await file.text();
   const { title, content } = parseUpload(file.name, text);
-  const id = await createDocumentWithContent(user.id, title, content);
+  const workspaceId = await resolveActiveWorkspaceId(user.id);
+  const id = await createDocumentWithContent(user.id, workspaceId, title, content);
 
   return NextResponse.json({ id }, { status: 201 });
 }

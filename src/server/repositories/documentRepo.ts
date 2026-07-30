@@ -9,10 +9,15 @@ import type { Role } from '@/lib/access';
 
 export type DocAccessRow = { ownerId: string; deletedAt: Date | null; shares: { userId: string; role: Role }[] };
 
-export async function insertDocument(ownerId: string, title: string, content: unknown): Promise<string> {
+export async function insertDocument(
+  ownerId: string,
+  workspaceId: string,
+  title: string,
+  content: unknown,
+): Promise<string> {
   const [row] = await db
     .insert(documents)
-    .values({ ownerId, title, content })
+    .values({ ownerId, workspaceId, title, content })
     .returning({ id: documents.id });
   return row.id;
 }
@@ -40,11 +45,13 @@ export async function getDocAccess(id: string): Promise<DocAccessRow | null> {
   };
 }
 
-export async function listOwned(userId: string) {
+export async function listOwned(userId: string, workspaceId: string) {
   return db
     .select({ id: documents.id, title: documents.title, updatedAt: documents.updatedAt })
     .from(documents)
-    .where(and(eq(documents.ownerId, userId), isNull(documents.deletedAt)))
+    .where(
+      and(eq(documents.ownerId, userId), eq(documents.workspaceId, workspaceId), isNull(documents.deletedAt)),
+    )
     .orderBy(desc(documents.updatedAt));
 }
 
@@ -62,11 +69,13 @@ export async function listSharedWith(userId: string) {
     .orderBy(desc(documents.updatedAt));
 }
 
-export async function listTrash(userId: string) {
+export async function listTrash(userId: string, workspaceId: string) {
   return db
     .select({ id: documents.id, title: documents.title, deletedAt: documents.deletedAt })
     .from(documents)
-    .where(and(eq(documents.ownerId, userId), isNotNull(documents.deletedAt)))
+    .where(
+      and(eq(documents.ownerId, userId), eq(documents.workspaceId, workspaceId), isNotNull(documents.deletedAt)),
+    )
     .orderBy(desc(documents.deletedAt));
 }
 
