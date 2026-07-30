@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type ChangeEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import type { Editor } from '@tiptap/react';
 import {
   Bold,
@@ -90,6 +90,17 @@ export function Toolbar({ editor, status, docId }: { editor: Editor; status: Sav
   const c = () => editor.chain().focus();
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  // Lets the slash-command menu's "Image" item reuse this upload flow without
+  // needing to know about the document id itself.
+  useEffect(() => {
+    const dom = editor.view.dom;
+    const openPicker = () => {
+      if (!uploadingImage) imageInputRef.current?.click();
+    };
+    dom.addEventListener('docslite:trigger-image-upload', openPicker);
+    return () => dom.removeEventListener('docslite:trigger-image-upload', openPicker);
+  }, [editor, uploadingImage]);
 
   const setLink = () => {
     const previousUrl = (editor.getAttributes('link').href as string | undefined) ?? '';
