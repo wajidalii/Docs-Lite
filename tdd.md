@@ -9,6 +9,28 @@
 
 ## Amendment Log
 
+**2026-07-31 — shadcn/ui adopted; deployment reality reconciled.** §3's stack
+table has claimed shadcn/ui since this document's original draft, but it was
+never actually installed until now (GitHub issue #9): `npx shadcn init`
+(Radix UI, Nova preset) plus `Button`/`Input`/`Dialog` primitives, with
+`ShareDialog.tsx` and `LoginForm.tsx` rebuilt on them as the first migrated
+slice — see the PR for #9 for the CSS-token-collision fix that adoption
+required (the generated theme block redeclared `--color-accent`,
+`--color-muted`, `--radius-sm/md/lg/xl`, and `--font-sans`, all already owned
+by this app; those redeclarations were removed so the rest of the hand-built
+`.dl-*` design system, out of scope for #9, stays visually unchanged). Most
+components remain hand-built; migration continues incrementally as future UI
+issues touch them (e.g. #24's workspace settings page). Separately: contrary
+to §13.B's "deployment deferred" framing, the app has in fact been deployed
+(Vercel + Neon, plain `pg` driver against Neon's pooled connection string —
+`@neondatabase/serverless` remains a tracked-but-optional future optimization,
+GitHub issue #53, not a precondition for being live). §13.B's narrative below
+is kept for historical/runbook reference; CLAUDE.md and README now describe
+current deploy status accurately. §3's shadcn row and §8.4's shadcn variable
+mapping are corrected below to match what was actually installed.
+
+---
+
 **2026-07-30 — Data model: introduce workspaces.** The original locked data
 model (§5) has no team/workspace concept — every document is a flat row
 owned by one user, and sharing is a per-document email grant with no
@@ -111,7 +133,7 @@ DocsLite is a Google-Docs-lite collaborative rich-text editor: users create, edi
 | `.docx` (stretch) | `mammoth` | `1.12.0` | — | Only if time remains; needs `@tiptap/html` + sanitize + Node runtime. |
 | Sanitizer (HTML paths only) | `isomorphic-dompurify` | `^3.19.0` | sanitize-html | Only for `.docx`/raw-HTML paths; patched DOMPurify ≥3.3.2 (CVE-2026-0540). |
 | Styling | Tailwind CSS + `@tailwindcss/postcss` | `4.3.x` | — | CSS-first `@theme`; build-time only; no runtime style engine. |
-| Components | shadcn/ui (Radix) | CLI latest | Mantine | Owned, readable, accessible primitives (Dialog/Tabs/Select). |
+| Components | shadcn/ui (Radix) | CLI latest | Mantine | Owned, readable, accessible primitives (Dialog/Tabs/Select). **Actually installed 2026-07-31 (issue #9, see Amendment Log) — incremental adoption: `Button`/`Input`/`Dialog` + `ShareDialog`/`LoginForm` migrated so far, rest of the UI is still hand-built `.dl-*`.** |
 | Doc typography | `@tailwindcss/typography` (`prose`) | latest | — | Professional canvas typography, near-zero CSS. |
 | Toasts | sonner | latest | shadcn toast (deprecated) | Current shadcn-recommended toast. |
 | Icons | lucide-react | latest | — | Ships with shadcn; one size/stroke. |
@@ -535,7 +557,7 @@ among workspaces they're already in.
 | Danger (delete/errors) | `#DC2626` |
 | Focus ring | `#2563EB` @ 40%, 2px offset |
 
-shadcn variable mapping: `--primary=#2563EB`, `--background=#F7F8FA`, `--card/--popover=#FFFFFF`, `--muted=#F1F3F5`, `--border/--input=#E4E7EC`, `--foreground=#1A2027`, `--muted-foreground=#667085`, `--ring=#2563EB`.
+~~shadcn variable mapping: `--primary=#2563EB`, `--background=#F7F8FA`, `--card/--popover=#FFFFFF`, `--muted=#F1F3F5`, `--border/--input=#E4E7EC`, `--foreground=#1A2027`, `--muted-foreground=#667085`, `--ring=#2563EB`.~~ **Superseded 2026-07-31 (issue #9, see Amendment Log)** — this was the original plan, never actually built against. The real mapping, chosen when shadcn was actually installed: `--primary`/`--ring` → `var(--color-accent)` (`#5b5bd6`, this app's real accent, not the `#2563EB` blue planned here); `--background`/`--card`/`--popover`/`--muted`/`--border`/`--input`/`--foreground`/`--muted-foreground` were left at shadcn's own Nova-preset defaults (no brand equivalent existed for those, and they don't collide with any existing token — see `src/app/globals.css`).
 
 ### 8.5 Typography
 Inter (self-hosted via `next/font`). UI base 14px; sidebar rows 14/500; doc title 15/600; canvas body 16/1.7 (prose); H1 30/700, H2 24/600, H3 20/600. Radius `--radius: 0.5rem` (8px). One shadow token: `0 1px 3px rgba(16,24,40,.06), 0 1px 2px rgba(16,24,40,.10)`.
