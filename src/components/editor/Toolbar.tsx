@@ -8,6 +8,7 @@ import {
   Underline,
   List,
   ListOrdered,
+  ListTodo,
   Link2,
   Table,
   Columns3,
@@ -149,6 +150,9 @@ export function Toolbar({ editor, status }: { editor: Editor; status: SaveStatus
       </Btn>
       <Btn label="Numbered list" active={editor.isActive('orderedList')} onClick={() => c().toggleOrderedList().run()}>
         <ListOrdered size={16} />
+      </Btn>
+      <Btn label="Task list" active={editor.isActive('taskList')} onClick={() => c().toggleTaskList().run()}>
+        <ListTodo size={16} />
       </Btn>
 
       <Status status={status} />
