@@ -40,7 +40,7 @@ export function DocumentHeader({
   }
 
   async function onDelete() {
-    if (!confirm('Delete this document? This cannot be undone.')) return;
+    if (!confirm('Move this document to trash? You can restore it later.')) return;
     const res = await deleteDoc(docId);
     if (!res.ok) {
       showToast('error', res.error);

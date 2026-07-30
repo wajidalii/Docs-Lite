@@ -25,6 +25,7 @@ export const documents = pgTable(
     content: jsonb('content').notNull(), // Tiptap / ProseMirror JSON
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (t) => [index('documents_owner_idx').on(t.ownerId)],
 );

@@ -69,3 +69,19 @@ export async function deleteDoc(id: string) {
   revalidatePath('/');
   redirect('/');
 }
+
+export async function restoreDoc(id: string) {
+  const user = await requireUser();
+  const parsedId = zUuid.safeParse(id);
+  if (!parsedId.success) return { ok: false as const, error: 'Invalid document id' };
+
+  try {
+    await svc.restoreDocumentForUser(parsedId.data, user.id);
+  } catch (err) {
+    if (err instanceof NotFoundError) return notFoundResult();
+    throw err;
+  }
+  revalidatePath('/trash');
+  revalidatePath('/');
+  return { ok: true as const };
+}

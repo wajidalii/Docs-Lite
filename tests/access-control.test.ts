@@ -59,4 +59,22 @@ describe('requireDocAccess', () => {
     getDocAccess.mockResolvedValue({ ownerId: OWNER, shares: [] });
     await expect(requireDocAccess('doc-1', VIEWER, 'viewer')).rejects.toThrow(NotFoundError);
   });
+
+  it('treats a soft-deleted document as not found for a shared viewer/editor', async () => {
+    getDocAccess.mockResolvedValue({
+      ownerId: OWNER,
+      deletedAt: new Date(),
+      shares: [
+        { userId: VIEWER, role: 'viewer' },
+        { userId: EDITOR, role: 'editor' },
+      ],
+    });
+    await expect(requireDocAccess('doc-1', VIEWER, 'viewer')).rejects.toThrow(NotFoundError);
+    await expect(requireDocAccess('doc-1', EDITOR, 'viewer')).rejects.toThrow(NotFoundError);
+  });
+
+  it('still resolves a soft-deleted document for its owner (needed to restore it)', async () => {
+    getDocAccess.mockResolvedValue({ ownerId: OWNER, deletedAt: new Date(), shares: [] });
+    await expect(requireDocAccess('doc-1', OWNER, 'owner')).resolves.toEqual({ role: 'owner' });
+  });
 });

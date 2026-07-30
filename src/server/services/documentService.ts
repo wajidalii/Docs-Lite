@@ -39,10 +39,21 @@ export async function saveDocumentContent(docId: string, userId: string, content
 
 export async function deleteDocumentForUser(docId: string, userId: string) {
   await requireDocAccess(docId, userId, 'owner');
-  await repo.deleteDocument(docId);
+  await repo.softDeleteDocument(docId);
+}
+
+export async function restoreDocumentForUser(docId: string, userId: string) {
+  // requireDocAccess exempts the owner from the soft-deleted-is-not-found
+  // rule, so this resolves even while the doc is still in the trash.
+  await requireDocAccess(docId, userId, 'owner');
+  await repo.restoreDocument(docId);
 }
 
 export async function listDashboard(userId: string) {
   const [owned, shared] = await Promise.all([repo.listOwned(userId), repo.listSharedWith(userId)]);
   return { owned, shared };
+}
+
+export async function listTrashForUser(userId: string) {
+  return repo.listTrash(userId);
 }

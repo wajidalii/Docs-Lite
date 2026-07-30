@@ -199,6 +199,7 @@ select.dl-field { cursor: pointer; }
 .dl-side-row .meta { font-size: 11.5px; color: var(--color-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dl-side-empty { font-size: 12.5px; color: var(--color-faint); padding: 2px 9px; }
 
+.dl-side-trash { margin: 0 14px 8px; flex-shrink: 0; }
 .dl-side-user { border-top: 1px solid var(--color-line-soft); padding: 12px 14px; display: flex; align-items: center; gap: 9px; }
 .dl-side-user .txt { min-width: 0; flex: 1; display: flex; flex-direction: column; }
 .dl-side-user .name { font-size: 13px; font-weight: 600; color: var(--color-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
