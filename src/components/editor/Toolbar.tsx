@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import type { Editor } from '@tiptap/react';
-import { Bold, Italic, Underline, List, ListOrdered, Check, AlertCircle } from 'lucide-react';
+import { Bold, Italic, Underline, List, ListOrdered, Link2, Check, AlertCircle } from 'lucide-react';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -58,6 +58,18 @@ function Status({ status }: { status: SaveStatus }) {
 
 export function Toolbar({ editor, status }: { editor: Editor; status: SaveStatus }) {
   const c = () => editor.chain().focus();
+
+  const setLink = () => {
+    const previousUrl = (editor.getAttributes('link').href as string | undefined) ?? '';
+    const url = window.prompt('Link URL', previousUrl);
+    if (url === null) return;
+    if (url.trim() === '') {
+      c().extendMarkRange('link').unsetLink().run();
+      return;
+    }
+    c().extendMarkRange('link').setLink({ href: url.trim() }).run();
+  };
+
   return (
     <div className="dl-toolbar">
       <Btn label="Heading 1" active={editor.isActive('heading', { level: 1 })} onClick={() => c().toggleHeading({ level: 1 }).run()}>
@@ -83,6 +95,9 @@ export function Toolbar({ editor, status }: { editor: Editor; status: SaveStatus
       </Btn>
       <Btn label="Underline" active={editor.isActive('underline')} onClick={() => c().toggleUnderline().run()}>
         <Underline size={16} />
+      </Btn>
+      <Btn label="Link" active={editor.isActive('link')} onClick={setLink}>
+        <Link2 size={16} />
       </Btn>
 
       <span className="dl-tb-sep" />
