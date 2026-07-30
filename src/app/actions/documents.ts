@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { requireUser } from '@/lib/session';
+import { resolveActiveWorkspaceId } from '@/lib/activeWorkspace';
 import { zTiptapDoc, zTitle, zUuid } from '@/lib/validation';
 import * as svc from '@/server/services/documentService';
 import { NotFoundError } from '@/server/services/access-control';
@@ -14,7 +15,8 @@ function notFoundResult() {
 
 export async function createDoc() {
   const user = await requireUser();
-  const id = await svc.createDocument(user.id);
+  const workspaceId = await resolveActiveWorkspaceId(user.id);
+  const id = await svc.createDocument(user.id, workspaceId);
   redirect(`/documents/${id}`);
 }
 

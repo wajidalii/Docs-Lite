@@ -1,0 +1,1 @@
+ALTER TABLE "documents" ALTER COLUMN "workspace_id" SET NOT NULL;

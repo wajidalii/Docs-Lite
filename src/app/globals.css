@@ -177,6 +177,8 @@ select.dl-field { cursor: pointer; }
 .dl-side-brand { display: flex; align-items: center; gap: 9px; padding: 18px 18px 14px; }
 .dl-side-brand .word { font-size: 15.5px; font-weight: 600; letter-spacing: -.02em; color: var(--color-ink); }
 .dl-side-close { display: none; margin-left: auto; }
+.dl-side-ws-switcher { padding: 0 14px 12px; }
+.dl-side-ws-switcher select { width: 100%; }
 .dl-side-actions { padding: 0 14px; display: flex; flex-direction: column; gap: 8px; }
 .dl-side-actions .dl-btn-primary, .dl-side-actions .dl-btn-secondary { width: 100%; }
 

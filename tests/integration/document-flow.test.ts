@@ -4,15 +4,17 @@ import { NotFoundError } from '@/server/services/access-control';
 import { EMPTY_DOC } from '@/lib/editor/empty';
 import { closeDb } from '@/server/db/client';
 
-// Seeded users (see src/lib/users.ts + scripts/seed.ts).
+// Seeded users + their personal workspaces (see src/lib/users.ts + scripts/seed.ts).
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
+const ALICE_WORKSPACE = 'aaaaaaaa-1111-4111-8111-111111111111';
+const BOB_WORKSPACE = 'aaaaaaaa-2222-4222-8222-222222222222';
 
 let docId: string;
 
 describe('document flow (integration — real Postgres)', () => {
   it('Alice creates a document she owns', async () => {
-    docId = await svc.createDocument(ALICE);
+    docId = await svc.createDocument(ALICE, ALICE_WORKSPACE);
     const { doc, role } = await svc.getDocumentForUser(docId, ALICE);
     expect(role).toBe('owner');
     expect(doc.title).toBe('Untitled');
@@ -41,10 +43,10 @@ describe('document flow (integration — real Postgres)', () => {
   });
 
   it('lists the document under the owner dashboard, not under a stranger', async () => {
-    const alice = await svc.listDashboard(ALICE);
+    const alice = await svc.listDashboard(ALICE, ALICE_WORKSPACE);
     expect(alice.owned.some((d) => d.id === docId)).toBe(true);
 
-    const bob = await svc.listDashboard(BOB);
+    const bob = await svc.listDashboard(BOB, BOB_WORKSPACE);
     expect(bob.owned.some((d) => d.id === docId)).toBe(false);
     expect(bob.shared.some((d) => d.id === docId)).toBe(false);
   });

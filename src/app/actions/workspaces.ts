@@ -2,14 +2,17 @@
 
 import { revalidatePath } from 'next/cache';
 import { requireUser } from '@/lib/session';
+import { setActiveWorkspaceCookie } from '@/lib/activeWorkspace';
 import { zEmail, zUuid, zWorkspaceName, zWorkspaceRole } from '@/lib/validation';
 import * as svc from '@/server/services/workspaceService';
 import { WorkspaceError, type WorkspaceMemberRow } from '@/server/services/workspaceService';
+import { requireWorkspaceAccess } from '@/server/services/workspace-access-control';
 import { NotFoundError } from '@/server/services/access-control';
 import { RateLimitError } from '@/server/services/rate-limit';
 
 export type WorkspaceMembersResult = { ok: true; members: WorkspaceMemberRow[] } | { ok: false; error: string };
 export type CreateWorkspaceResult = { ok: true; id: string } | { ok: false; error: string };
+export type SetActiveWorkspaceResult = { ok: true } | { ok: false; error: string };
 
 function handleError(err: unknown): WorkspaceMembersResult {
   if (err instanceof WorkspaceError) return { ok: false, error: err.message };
@@ -97,4 +100,22 @@ export async function listMembers(workspaceId: string): Promise<WorkspaceMembers
   } catch (err) {
     return handleError(err);
   }
+}
+
+/** Which workspace the dashboard/createDoc/upload use — see src/lib/activeWorkspace.ts. */
+export async function setActiveWorkspace(workspaceId: string): Promise<SetActiveWorkspaceResult> {
+  const user = await requireUser();
+  const pid = zUuid.safeParse(workspaceId);
+  if (!pid.success) return { ok: false, error: 'Invalid workspace' };
+
+  try {
+    await requireWorkspaceAccess(pid.data, user.id, 'member');
+  } catch (err) {
+    if (err instanceof NotFoundError) return { ok: false, error: 'Workspace not found' };
+    throw err;
+  }
+
+  await setActiveWorkspaceCookie(pid.data);
+  revalidatePath('/');
+  return { ok: true };
 }

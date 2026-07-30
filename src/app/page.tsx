@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/session';
+import { resolveActiveWorkspaceId } from '@/lib/activeWorkspace';
 import { listDashboard } from '@/server/services/documentService';
+import { listWorkspacesForUser } from '@/server/services/workspaceService';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { timeAgo } from '@/lib/time';
 
@@ -8,7 +10,11 @@ export default async function Home() {
   const user = await getCurrentUser();
   if (!user) redirect('/login');
 
-  const { owned, shared } = await listDashboard(user.id);
+  const activeWorkspaceId = await resolveActiveWorkspaceId(user.id);
+  const [{ owned, shared }, workspaces] = await Promise.all([
+    listDashboard(user.id, activeWorkspaceId),
+    listWorkspacesForUser(user.id),
+  ]);
 
   const ownedD = owned.map((d) => ({
     id: d.id,
@@ -24,6 +30,12 @@ export default async function Home() {
   }));
 
   return (
-    <Dashboard user={{ id: user.id, name: user.name, email: user.email }} owned={ownedD} shared={sharedD} />
+    <Dashboard
+      user={{ id: user.id, name: user.name, email: user.email }}
+      owned={ownedD}
+      shared={sharedD}
+      workspaces={workspaces}
+      activeWorkspaceId={activeWorkspaceId}
+    />
   );
 }

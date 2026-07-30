@@ -10,12 +10,14 @@ const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
 const ALICE_EMAIL = 'alice@docslite.dev';
 const BOB_EMAIL = 'bob@docslite.dev';
+const ALICE_WORKSPACE = 'aaaaaaaa-1111-4111-8111-111111111111';
+const BOB_WORKSPACE = 'aaaaaaaa-2222-4222-8222-222222222222';
 
 let docId: string;
 
 describe('sharing flow (integration — real Postgres)', () => {
   beforeAll(async () => {
-    docId = await docs.createDocument(ALICE);
+    docId = await docs.createDocument(ALICE, ALICE_WORKSPACE);
   });
 
   it('sharing with Bob as viewer lets him read but not edit', async () => {
@@ -23,7 +25,7 @@ describe('sharing flow (integration — real Postgres)', () => {
     expect(collabs).toHaveLength(1);
     expect(collabs[0]).toMatchObject({ userId: BOB, role: 'viewer' });
 
-    const bobDash = await docs.listDashboard(BOB);
+    const bobDash = await docs.listDashboard(BOB, BOB_WORKSPACE);
     expect(bobDash.shared.some((d) => d.id === docId && d.role === 'viewer')).toBe(true);
 
     const opened = await docs.getDocumentForUser(docId, BOB);
@@ -49,7 +51,7 @@ describe('sharing flow (integration — real Postgres)', () => {
     const collabs = await sharing.revokeShare(docId, ALICE, BOB);
     expect(collabs).toHaveLength(0);
     await expect(docs.getDocumentForUser(docId, BOB)).rejects.toBeInstanceOf(NotFoundError);
-    const bobDash = await docs.listDashboard(BOB);
+    const bobDash = await docs.listDashboard(BOB, BOB_WORKSPACE);
     expect(bobDash.shared.some((d) => d.id === docId)).toBe(false);
   });
 
