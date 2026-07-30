@@ -59,7 +59,7 @@ describe('saveDocumentContent — periodic version snapshot', () => {
     getLatestVersionTime.mockResolvedValue(new Date(Date.now() - 30_000)); // 30s ago
     await saveDocumentContent(DOC, OWNER, { type: 'doc' });
     expect(insertVersion).not.toHaveBeenCalled();
-    expect(updateContent).toHaveBeenCalledWith(DOC, { type: 'doc' }); // the actual save still happens
+    expect(updateContent).toHaveBeenCalledWith(DOC, { type: 'doc' }, ''); // the actual save still happens
   });
 
   it('snapshots again once the interval has elapsed', async () => {
@@ -83,7 +83,7 @@ describe('restoreVersionForUser', () => {
     await restoreVersionForUser(DOC, OWNER, 'v1');
 
     expect(insertVersion).toHaveBeenCalledWith(DOC, OWNER, { type: 'doc', current: true });
-    expect(updateContent).toHaveBeenCalledWith(DOC, { type: 'doc', old: true });
+    expect(updateContent).toHaveBeenCalledWith(DOC, { type: 'doc', old: true }, '');
   });
 
   it('denies a shared viewer (below editor rank)', async () => {

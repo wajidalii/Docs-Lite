@@ -1,5 +1,6 @@
 import 'server-only';
 import { EMPTY_DOC } from '@/lib/editor/empty';
+import { extractText } from '@/lib/editor/extractText';
 import * as repo from '@/server/repositories/documentRepo';
 import * as versionRepo from '@/server/repositories/versionRepo';
 import { NotFoundError, requireDocAccess } from './access-control';
@@ -21,7 +22,7 @@ async function maybeSnapshotVersion(docId: string, userId: string, content: unkn
 
 export async function createDocument(userId: string, workspaceId: string): Promise<string> {
   await requireWorkspaceAccess(workspaceId, userId, 'member');
-  return repo.insertDocument(userId, workspaceId, 'Untitled', EMPTY_DOC);
+  return repo.insertDocument(userId, workspaceId, 'Untitled', EMPTY_DOC, extractText(EMPTY_DOC));
 }
 
 export async function createDocumentWithContent(
@@ -31,7 +32,7 @@ export async function createDocumentWithContent(
   content: unknown,
 ): Promise<string> {
   await requireWorkspaceAccess(workspaceId, userId, 'member');
-  return repo.insertDocument(userId, workspaceId, title, content);
+  return repo.insertDocument(userId, workspaceId, title, content, extractText(content));
 }
 
 export async function getDocumentForUser(docId: string, userId: string) {
@@ -51,7 +52,10 @@ export async function saveDocumentContent(docId: string, userId: string, content
   await requireDocAccess(docId, userId, 'editor');
   // Run concurrently, not sequentially — the periodic snapshot check must
   // never add latency to the autosave debounce's critical path.
-  await Promise.all([repo.updateContent(docId, content), maybeSnapshotVersion(docId, userId, content)]);
+  await Promise.all([
+    repo.updateContent(docId, content, extractText(content)),
+    maybeSnapshotVersion(docId, userId, content),
+  ]);
 }
 
 export async function deleteDocumentForUser(docId: string, userId: string) {
@@ -77,4 +81,8 @@ export async function listDashboard(userId: string, workspaceId: string) {
 
 export async function listTrashForUser(userId: string, workspaceId: string) {
   return repo.listTrash(userId, workspaceId);
+}
+
+export async function searchDocuments(userId: string, query: string) {
+  return repo.searchAccessible(userId, query);
 }

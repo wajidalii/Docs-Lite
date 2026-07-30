@@ -7,6 +7,12 @@ const bytea = customType<{ data: Buffer }>({
   },
 });
 
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return 'tsvector';
+  },
+});
+
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: text('email').notNull().unique(),
@@ -31,11 +37,22 @@ export const documents = pgTable(
       .references(() => workspaces.id, { onDelete: 'cascade' }),
     title: text('title').notNull().default('Untitled'),
     content: jsonb('content').notNull(), // Tiptap / ProseMirror JSON
+    // Plain-text extraction of `content` (src/lib/editor/extractText.ts),
+    // kept in sync on every save so full-text search has something to index
+    // — walking arbitrarily-nested Tiptap JSON isn't practical in plain SQL.
+    contentText: text('content_text').notNull().default(''),
+    searchVector: tsvector('search_vector').generatedAlwaysAs(
+      sql`to_tsvector('english', coalesce(title, '') || ' ' || coalesce(content_text, ''))`,
+    ),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
-  (t) => [index('documents_owner_idx').on(t.ownerId), index('documents_workspace_idx').on(t.workspaceId)],
+  (t) => [
+    index('documents_owner_idx').on(t.ownerId),
+    index('documents_workspace_idx').on(t.workspaceId),
+    index('documents_search_idx').using('gin', t.searchVector),
+  ],
 );
 
 export const documentShares = pgTable(

@@ -14,6 +14,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx scripts/seed.ts",
     "db:backfill-workspaces": "tsx scripts/backfill-workspaces.ts",
+    "db:backfill-search-text": "tsx scripts/backfill-search-text.ts",
     "db:reset": "docker compose down -v && docker compose up -d"
   },
   "dependencies": {
