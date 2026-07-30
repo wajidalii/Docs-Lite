@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseUpload } from '@/lib/upload/parse';
-import { validateUpload } from '@/lib/upload/validate';
+import { validateUpload, validateImageUpload } from '@/lib/upload/validate';
 
 describe('validateUpload', () => {
   it('accepts .txt and .md', () => {
@@ -16,6 +16,24 @@ describe('validateUpload', () => {
 
   it('rejects files larger than 1MB', () => {
     expect(validateUpload({ name: 'a.md', size: 2_000_000 }).ok).toBe(false);
+  });
+});
+
+describe('validateImageUpload', () => {
+  it('accepts png, jpeg, gif, and webp', () => {
+    expect(validateImageUpload({ type: 'image/png', size: 10 })).toEqual({ ok: true, mimeType: 'image/png' });
+    expect(validateImageUpload({ type: 'image/jpeg', size: 10 })).toEqual({ ok: true, mimeType: 'image/jpeg' });
+    expect(validateImageUpload({ type: 'image/gif', size: 10 })).toEqual({ ok: true, mimeType: 'image/gif' });
+    expect(validateImageUpload({ type: 'image/webp', size: 10 })).toEqual({ ok: true, mimeType: 'image/webp' });
+  });
+
+  it('rejects unsupported mime types', () => {
+    expect(validateImageUpload({ type: 'image/svg+xml', size: 10 }).ok).toBe(false);
+    expect(validateImageUpload({ type: 'application/pdf', size: 10 }).ok).toBe(false);
+  });
+
+  it('rejects images larger than 4MB', () => {
+    expect(validateImageUpload({ type: 'image/png', size: 5_000_000 }).ok).toBe(false);
   });
 });
 
@@ -87,6 +105,14 @@ describe('parseUpload — markdown', () => {
     expect(rows).toHaveLength(2);
     expect(findText(tables[0], '1')).toBeTruthy();
     expect(findText(tables[0], '2')).toBeTruthy();
+  });
+
+  it('parses ![alt](src) into an image node', () => {
+    const { content } = parseUpload('notes.md', '![a diagram](/api/images/abc123)');
+    const images = findAll(content as Node, 'image');
+    expect(images).toHaveLength(1);
+    expect(images[0].attrs?.src).toBe('/api/images/abc123');
+    expect(images[0].attrs?.alt).toBe('a diagram');
   });
 
   it('parses `- [ ]` / `- [x]` into taskList/taskItem nodes with checked state', () => {

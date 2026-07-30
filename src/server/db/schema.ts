@@ -1,5 +1,11 @@
-import { pgTable, uuid, text, jsonb, timestamp, unique, index, check } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, jsonb, integer, timestamp, unique, index, check, customType } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+
+const bytea = customType<{ data: Buffer }>({
+  dataType() {
+    return 'bytea';
+  },
+});
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -43,6 +49,24 @@ export const documentShares = pgTable(
   ],
 );
 
+// Uploaded images embedded in a document body, kept out of the jsonb content
+// column — the editor references them by id (`/api/images/:id`), never inline.
+export const documentImages = pgTable(
+  'document_images',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    documentId: uuid('document_id')
+      .notNull()
+      .references(() => documents.id, { onDelete: 'cascade' }),
+    mimeType: text('mime_type').notNull(),
+    size: integer('size').notNull(),
+    data: bytea('data').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('document_images_document_idx').on(t.documentId)],
+);
+
 export type UserRow = typeof users.$inferSelect;
 export type DocumentRow = typeof documents.$inferSelect;
 export type DocumentShareRow = typeof documentShares.$inferSelect;
+export type DocumentImageRow = typeof documentImages.$inferSelect;

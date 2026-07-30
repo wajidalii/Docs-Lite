@@ -284,6 +284,9 @@ select.dl-field { cursor: pointer; }
 .dl-sheet .ProseMirror ul[data-type="taskList"] input[type="checkbox"] { cursor: pointer; }
 .dl-sheet .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div { color: var(--color-muted); text-decoration: line-through; }
 
+.dl-sheet .ProseMirror img { max-width: 100%; height: auto; border-radius: var(--radius-md); margin: 8px 0 14px; display: block; }
+.dl-sheet .ProseMirror img.ProseMirror-selectednode { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
 .dl-sheet .ProseMirror table { border-collapse: collapse; table-layout: fixed; width: 100%; margin: 0 0 14px; overflow: hidden; }
 .dl-sheet .ProseMirror th, .dl-sheet .ProseMirror td { border: 1px solid var(--color-line); padding: 8px 10px; vertical-align: top; box-sizing: border-box; position: relative; }
 .dl-sheet .ProseMirror th { background: var(--color-accent-tint); font-weight: 600; text-align: left; }

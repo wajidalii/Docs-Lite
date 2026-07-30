@@ -64,7 +64,7 @@ export function Editor({
   return (
     <>
       {editable ? (
-        <Toolbar editor={editor} status={status} />
+        <Toolbar editor={editor} status={status} docId={docId} />
       ) : (
         <div className="dl-viewonly">
           <Eye size={15} />
