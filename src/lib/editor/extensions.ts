@@ -5,6 +5,10 @@ import { TableKit } from '@tiptap/extension-table';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Image from '@tiptap/extension-image';
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import { createLowlight, common } from 'lowlight';
+
+const lowlight = createLowlight(common);
 
 // The SINGLE shared extensions array. Both the client editor and the server-side
 // markdown/upload parser MUST use this exact set so content round-trips without
@@ -18,7 +22,9 @@ export const extensions = [
   StarterKit.configure({
     heading: { levels: [1, 2, 3] },
     link: false,
+    codeBlock: false,
   }),
+  CodeBlockLowlight.configure({ lowlight }),
   Link.configure({
     openOnClick: false,
     autolink: true,
