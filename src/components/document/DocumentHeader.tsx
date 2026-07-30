@@ -19,11 +19,13 @@ export function DocumentHeader({
   initialTitle,
   role,
   currentUser,
+  workspaceId,
 }: {
   docId: string;
   initialTitle: string;
   role: EffectiveRole;
   currentUser: User;
+  workspaceId: string;
 }) {
   const router = useRouter();
   const isOwner = role === 'owner';
@@ -80,7 +82,7 @@ export function DocumentHeader({
 
       {canEdit && <VersionHistoryDialog docId={docId} docTitle={title} />}
 
-      {isOwner && <ShareDialog docId={docId} docTitle={title} owner={currentUser} />}
+      {isOwner && <ShareDialog docId={docId} docTitle={title} owner={currentUser} workspaceId={workspaceId} />}
 
       {isOwner && (
         <button type="button" className="dl-icon-btn is-danger" onClick={onDelete} aria-label="Delete document">

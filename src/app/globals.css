@@ -335,6 +335,10 @@ select.dl-field { cursor: pointer; }
 .dl-share-form .dl-btn-primary { min-height: 40px; }
 .dl-share-msg { font-size: 12.5px; color: var(--color-faint); display: flex; align-items: center; gap: 6px; margin-top: -8px; }
 .dl-share-msg.is-error { color: var(--color-danger); font-weight: 500; }
+.dl-member-picker { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.dl-member-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.dl-member-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border: 1px solid var(--color-line); border-radius: 999px; background: var(--color-surface); color: var(--color-body); font-size: 12.5px; font-weight: 500; cursor: pointer; }
+.dl-member-chip:hover { background: var(--color-accent-tint); border-color: var(--color-accent-line); color: var(--color-accent); }
 .dl-access-head { display: flex; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--color-line-soft); }
 .dl-access-list { list-style: none; margin: 0; padding: 0; }
 .dl-access-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--color-line-soft); }

@@ -34,6 +34,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         initialTitle={data.doc.title}
         role={data.role}
         currentUser={{ id: user.id, name: user.name, email: user.email }}
+        workspaceId={data.doc.workspaceId}
       />
       <Editor
         key={id}
