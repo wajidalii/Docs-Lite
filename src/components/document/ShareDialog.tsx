@@ -9,19 +9,32 @@ import {
   listCollaborators,
   type ShareResult,
 } from '@/app/actions/sharing';
+import { listMembers, type WorkspaceMembersResult } from '@/app/actions/workspaces';
 import { Avatar } from '@/components/brand/Avatar';
 import { showToast } from '@/lib/toast';
 
 type Collaborator = Extract<ShareResult, { ok: true }>['collaborators'][number];
+type WorkspaceMember = Extract<WorkspaceMembersResult, { ok: true }>['members'][number];
 type User = { id: string; name: string; email: string };
 
 const first = (n: string) => n.split(' ')[0];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const verb = (r: string) => (r === 'editor' ? 'edit' : 'view');
 
-export function ShareDialog({ docId, docTitle, owner }: { docId: string; docTitle: string; owner: User }) {
+export function ShareDialog({
+  docId,
+  docTitle,
+  owner,
+  workspaceId,
+}: {
+  docId: string;
+  docTitle: string;
+  owner: User;
+  workspaceId: string;
+}) {
   const [open, setOpen] = useState(false);
   const [collabs, setCollabs] = useState<Collaborator[]>([]);
+  const [wsMembers, setWsMembers] = useState<WorkspaceMember[]>([]);
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<'viewer' | 'editor'>('editor');
   const [error, setError] = useState<string | null>(null);
@@ -39,14 +52,19 @@ export function ShareDialog({ docId, docTitle, owner }: { docId: string; docTitl
   async function openDialog() {
     setOpen(true);
     setError(null);
-    const r = await listCollaborators(docId);
+    const [r, m] = await Promise.all([listCollaborators(docId), listMembers(workspaceId)]);
     if (r.ok) setCollabs(r.collaborators);
+    if (m.ok) setWsMembers(m.members);
   }
   function close() {
     setOpen(false);
     setError(null);
     setEmail('');
   }
+
+  const pickableMembers = wsMembers.filter(
+    (m) => m.userId !== owner.id && !collabs.some((c) => c.userId === m.userId),
+  );
 
   async function onShare(e: FormEvent) {
     e.preventDefault();
@@ -138,6 +156,28 @@ export function ShareDialog({ docId, docTitle, owner }: { docId: string; docTitl
                 </p>
               ) : (
                 <p className="dl-share-msg">Demo teammates: bob@, carol@, dave@ (docslite.dev)</p>
+              )}
+
+              {pickableMembers.length > 0 && (
+                <div className="dl-member-picker">
+                  <span className="dl-eyebrow">From your workspace</span>
+                  <div className="dl-member-chips">
+                    {pickableMembers.map((m) => (
+                      <button
+                        key={m.userId}
+                        type="button"
+                        className="dl-member-chip"
+                        onClick={() => {
+                          setEmail(m.email);
+                          setError(null);
+                        }}
+                      >
+                        <Avatar id={m.userId} name={m.name} size={18} />
+                        {first(m.name)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
 
