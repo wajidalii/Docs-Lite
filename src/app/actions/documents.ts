@@ -31,6 +31,24 @@ export async function createDoc() {
   redirect(`/documents/${id}`);
 }
 
+export async function duplicateDoc(id: string) {
+  const user = await requireUser();
+  const parsedId = zUuid.safeParse(id);
+  if (!parsedId.success) return { ok: false as const, error: 'Invalid document id' };
+
+  const workspaceId = await resolveActiveWorkspaceId(user.id);
+
+  let newId: string;
+  try {
+    newId = await svc.duplicateDocumentForUser(parsedId.data, user.id, workspaceId);
+  } catch (err) {
+    if (err instanceof NotFoundError) return notFoundResult();
+    throw err;
+  }
+  revalidatePath('/');
+  redirect(`/documents/${newId}`);
+}
+
 export async function renameDoc(id: string, title: string) {
   const user = await requireUser();
   const parsedId = zUuid.safeParse(id);
