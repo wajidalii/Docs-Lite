@@ -168,6 +168,25 @@ export const documentPresence = pgTable(
   ],
 );
 
+// Server-side record of an issued iron-session cookie. The cookie itself
+// carries { userId, sessionId }; getCurrentUser() (src/lib/session.ts) also
+// confirms this row still exists before trusting the cookie, so a revoked
+// session stops working immediately even though the signed cookie is still
+// cryptographically valid until it expires on its own.
+export const sessions = pgTable(
+  'sessions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+    userAgent: text('user_agent'),
+  },
+  (t) => [index('sessions_user_idx').on(t.userId)],
+);
+
 export type UserRow = typeof users.$inferSelect;
 export type DocumentRow = typeof documents.$inferSelect;
 export type DocumentShareRow = typeof documentShares.$inferSelect;
@@ -176,3 +195,4 @@ export type DocumentVersionRow = typeof documentVersions.$inferSelect;
 export type WorkspaceRow = typeof workspaces.$inferSelect;
 export type WorkspaceMemberRow = typeof workspaceMembers.$inferSelect;
 export type DocumentPresenceRow = typeof documentPresence.$inferSelect;
+export type SessionRow = typeof sessions.$inferSelect;

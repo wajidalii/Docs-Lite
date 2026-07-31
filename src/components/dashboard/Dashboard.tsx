@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, FileText, LogOut, Menu, X, ChevronRight, Trash2, Settings, Copy } from 'lucide-react';
+import { Plus, FileText, LogOut, Menu, X, ChevronRight, Trash2, Settings, Copy, Monitor } from 'lucide-react';
 import { createDoc, duplicateDoc } from '@/app/actions/documents';
 import { setActiveWorkspace } from '@/app/actions/workspaces';
 import { signOut } from '@/app/actions/auth';
@@ -183,6 +183,9 @@ export function Dashboard({
             <span className="name">{user.name}</span>
             <span className="email">{user.email}</span>
           </span>
+          <Link href="/settings/sessions" className="dl-icon-btn" title="Active sessions" aria-label="Active sessions">
+            <Monitor size={17} />
+          </Link>
           <form action={signOut}>
             <button type="submit" className="dl-icon-btn" title="Sign out" aria-label="Sign out">
               <LogOut size={17} />

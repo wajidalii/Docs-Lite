@@ -1,9 +1,10 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/session';
+import { getSession, establishSession } from '@/lib/session';
 import { zSignUpInput, zSignInInput } from '@/lib/validation';
 import { signUpUser, signInUser, AuthError } from '@/server/services/authService';
+import { revokeSession } from '@/server/services/sessionService';
 
 export type AuthResult = { ok: true } | { ok: false; error: string };
 
@@ -21,6 +22,7 @@ export async function signUp(email: string, password: string, name: string): Pro
 
   const session = await getSession();
   session.userId = user.id;
+  await establishSession(session, user.id);
   await session.save();
   redirect('/');
 }
@@ -39,12 +41,16 @@ export async function signIn(email: string, password: string): Promise<AuthResul
 
   const session = await getSession();
   session.userId = user.id;
+  await establishSession(session, user.id);
   await session.save();
   redirect('/');
 }
 
 export async function signOut() {
   const session = await getSession();
+  if (session.userId && session.sessionId) {
+    await revokeSession(session.sessionId, session.userId);
+  }
   session.destroy();
   redirect('/login');
 }
