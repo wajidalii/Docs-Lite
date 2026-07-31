@@ -35,6 +35,22 @@ export async function createDocumentWithContent(
   return repo.insertDocument(userId, workspaceId, title, content, extractText(content));
 }
 
+/**
+ * Clone a document the caller can at least view into a new document they
+ * own, in the given (active) workspace — not necessarily the source
+ * document's workspace. Title gets a "(copy)" suffix; content/contentText
+ * are copied verbatim so the duplicate is immediately searchable too.
+ */
+export async function duplicateDocumentForUser(docId: string, userId: string, workspaceId: string): Promise<string> {
+  await requireDocAccess(docId, userId, 'viewer');
+  await requireWorkspaceAccess(workspaceId, userId, 'member');
+
+  const source = await repo.getDocumentById(docId);
+  if (!source) throw new NotFoundError();
+
+  return repo.insertDocument(userId, workspaceId, `${source.title} (copy)`, source.content, extractText(source.content));
+}
+
 export async function getDocumentForUser(docId: string, userId: string) {
   const { role } = await requireDocAccess(docId, userId, 'viewer');
   const doc = await repo.getDocumentById(docId);

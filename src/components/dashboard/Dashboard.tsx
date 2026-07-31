@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, FileText, LogOut, Menu, X, ChevronRight, Trash2, Settings } from 'lucide-react';
-import { createDoc } from '@/app/actions/documents';
+import { Plus, FileText, LogOut, Menu, X, ChevronRight, Trash2, Settings, Copy } from 'lucide-react';
+import { createDoc, duplicateDoc } from '@/app/actions/documents';
 import { setActiveWorkspace } from '@/app/actions/workspaces';
 import { signOut } from '@/app/actions/auth';
 import { Logo } from '@/components/brand/Logo';
@@ -37,6 +37,7 @@ export function Dashboard({
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const all = [...owned, ...shared];
 
   async function onSwitchWorkspace(id: string) {
@@ -46,6 +47,17 @@ export function Dashboard({
     setSwitching(false);
     if (res.ok) router.refresh();
     else showToast('error', res.error);
+  }
+
+  async function onDuplicate(id: string) {
+    setDuplicatingId(id);
+    const res = await duplicateDoc(id);
+    // duplicateDoc redirects to the new document on success — this line only
+    // runs on the error path.
+    if (!res.ok) {
+      setDuplicatingId(null);
+      showToast('error', res.error);
+    }
   }
 
   return (
@@ -206,21 +218,33 @@ export function Dashboard({
             </div>
             <div className="dl-doc-card">
               {all.map((d) => (
-                <Link key={d.id} href={`/documents/${d.id}`} className="dl-doc-row">
-                  <span className="dl-doc-tile">
-                    <FileText size={16} />
-                  </span>
-                  <span className="body">
-                    <span className="title">{d.title}</span>
-                    <span className="meta">
-                      {roleLabel[d.role]} · {d.timeLabel}
+                <div key={d.id} className="dl-doc-row">
+                  <Link href={`/documents/${d.id}`} className="dl-doc-row-link">
+                    <span className="dl-doc-tile">
+                      <FileText size={16} />
                     </span>
-                  </span>
-                  <span className="dl-pill role-pill" data-role={d.role}>
-                    {roleLabel[d.role]}
-                  </span>
-                  <ChevronRight size={16} className="chev" />
-                </Link>
+                    <span className="body">
+                      <span className="title">{d.title}</span>
+                      <span className="meta">
+                        {roleLabel[d.role]} · {d.timeLabel}
+                      </span>
+                    </span>
+                    <span className="dl-pill role-pill" data-role={d.role}>
+                      {roleLabel[d.role]}
+                    </span>
+                    <ChevronRight size={16} className="chev" />
+                  </Link>
+                  <button
+                    type="button"
+                    className="dl-icon-btn"
+                    aria-label={`Duplicate ${d.title}`}
+                    title="Duplicate"
+                    disabled={duplicatingId === d.id}
+                    onClick={() => onDuplicate(d.id)}
+                  >
+                    {duplicatingId === d.id ? <span className="dl-spinner" /> : <Copy size={16} />}
+                  </button>
+                </div>
               ))}
             </div>
           </>
