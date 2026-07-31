@@ -144,6 +144,30 @@ export const workspaceMembers = pgTable(
   ],
 );
 
+// Who currently has a document open, for presence avatars. A row per
+// (document, user) — heartbeats upsert lastSeenAt rather than growing the
+// table; "active" is a read-time filter (lastSeenAt within the last N
+// seconds), never a delete, so a stale row is just filtered out, not
+// cleaned up. Not an access-control table — presence is gated the same way
+// reading the document is (requireDocAccess), never a boundary on its own.
+export const documentPresence = pgTable(
+  'document_presence',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    documentId: uuid('document_id')
+      .notNull()
+      .references(() => documents.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique('document_presence_doc_user_uniq').on(t.documentId, t.userId),
+    index('document_presence_document_idx').on(t.documentId),
+  ],
+);
+
 export type UserRow = typeof users.$inferSelect;
 export type DocumentRow = typeof documents.$inferSelect;
 export type DocumentShareRow = typeof documentShares.$inferSelect;
@@ -151,3 +175,4 @@ export type DocumentImageRow = typeof documentImages.$inferSelect;
 export type DocumentVersionRow = typeof documentVersions.$inferSelect;
 export type WorkspaceRow = typeof workspaces.$inferSelect;
 export type WorkspaceMemberRow = typeof workspaceMembers.$inferSelect;
+export type DocumentPresenceRow = typeof documentPresence.$inferSelect;
