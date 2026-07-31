@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { getSession, establishSession } from '@/lib/session';
 import { zSignUpInput, zSignInInput } from '@/lib/validation';
 import { signUpUser, signInUser, AuthError } from '@/server/services/authService';
-import { deleteSessionForUser } from '@/server/repositories/sessionRepo';
+import { revokeSession } from '@/server/services/sessionService';
 
 export type AuthResult = { ok: true } | { ok: false; error: string };
 
@@ -49,7 +49,7 @@ export async function signIn(email: string, password: string): Promise<AuthResul
 export async function signOut() {
   const session = await getSession();
   if (session.userId && session.sessionId) {
-    await deleteSessionForUser(session.sessionId, session.userId);
+    await revokeSession(session.sessionId, session.userId);
   }
   session.destroy();
   redirect('/login');
