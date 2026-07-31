@@ -4,6 +4,7 @@ import { findUserById, findUserByEmail } from '@/server/repositories/userRepo';
 import * as shareRepo from '@/server/repositories/shareRepo';
 import { requireDocAccess } from './access-control';
 import { shareRateLimit } from './rate-limit';
+import { recordAuditEvent } from './auditService';
 
 /** User-facing sharing error (invalid target, self-share, etc.). */
 export class ShareError extends Error {
@@ -25,6 +26,13 @@ export async function shareDocument(docId: string, actingUserId: string, email: 
   if (target.id === actingUserId) throw new ShareError('You already own this document');
 
   await shareRepo.upsertShare(docId, target.id, role);
+  await recordAuditEvent({
+    actorId: actingUserId,
+    action: 'share.granted',
+    targetType: 'document',
+    targetId: docId,
+    metadata: { targetUserId: target.id, role },
+  });
   return shareRepo.listShares(docId);
 }
 
@@ -34,7 +42,15 @@ export async function changeRole(docId: string, actingUserId: string, targetUser
   await requireDocAccess(docId, actingUserId, 'owner');
   if (targetUserId === actingUserId) throw new ShareError('You already own this document');
   if (!(await findUserById(targetUserId))) throw new ShareError('No user with that id');
+  const oldRole = await shareRepo.getShareRole(docId, targetUserId);
   await shareRepo.upsertShare(docId, targetUserId, role);
+  await recordAuditEvent({
+    actorId: actingUserId,
+    action: 'share.role_changed',
+    targetType: 'document',
+    targetId: docId,
+    metadata: { targetUserId, oldRole, newRole: role },
+  });
   return shareRepo.listShares(docId);
 }
 
@@ -43,6 +59,13 @@ export async function revokeShare(docId: string, actingUserId: string, targetUse
   shareRateLimit(actingUserId);
   await requireDocAccess(docId, actingUserId, 'owner');
   await shareRepo.removeShare(docId, targetUserId);
+  await recordAuditEvent({
+    actorId: actingUserId,
+    action: 'share.revoked',
+    targetType: 'document',
+    targetId: docId,
+    metadata: { targetUserId },
+  });
   return shareRepo.listShares(docId);
 }
 
