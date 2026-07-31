@@ -20,6 +20,15 @@ export async function listShares(docId: string): Promise<Collaborator[]> {
   return rows.map((r) => ({ ...r, role: r.role as Role }));
 }
 
+/** A single collaborator's current role, or null if they have no share row. */
+export async function getShareRole(docId: string, targetUserId: string): Promise<Role | null> {
+  const [row] = await db
+    .select({ role: documentShares.role })
+    .from(documentShares)
+    .where(and(eq(documentShares.documentId, docId), eq(documentShares.sharedWithUserId, targetUserId)));
+  return row ? (row.role as Role) : null;
+}
+
 export async function upsertShare(docId: string, targetUserId: string, role: Role) {
   await db
     .insert(documentShares)

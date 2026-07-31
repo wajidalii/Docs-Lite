@@ -187,6 +187,34 @@ export const sessions = pgTable(
   (t) => [index('sessions_user_idx').on(t.userId)],
 );
 
+// Generalized audit trail — one table for login, sharing, and future
+// workspace-admin events rather than a bespoke table per feature (see
+// GitHub issue #48). `actorId` is nullable with `onDelete: 'set null'`
+// (not `cascade`): deleting a user must never silently erase the
+// historical record of what they did — the row survives, just anonymized.
+// `targetId` is deliberately NOT a foreign key — the target can be a
+// document, a workspace, a user, etc. (whatever `targetType` says), and a
+// single audit table shouldn't hard-couple itself to one target table.
+// `action` is a free-form but consistently-namespaced string, e.g.
+// 'share.granted' / 'share.role_changed' / 'share.revoked' — dot-namespaced
+// by feature area so `action LIKE 'share.%'` style queries stay simple.
+export const auditLog = pgTable(
+  'audit_log',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    actorId: uuid('actor_id').references(() => users.id, { onDelete: 'set null' }),
+    action: text('action').notNull(),
+    targetType: text('target_type').notNull(),
+    targetId: uuid('target_id').notNull(),
+    metadata: jsonb('metadata'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('audit_log_target_idx').on(t.targetType, t.targetId),
+    index('audit_log_actor_idx').on(t.actorId),
+  ],
+);
+
 export type UserRow = typeof users.$inferSelect;
 export type DocumentRow = typeof documents.$inferSelect;
 export type DocumentShareRow = typeof documentShares.$inferSelect;
@@ -196,3 +224,4 @@ export type WorkspaceRow = typeof workspaces.$inferSelect;
 export type WorkspaceMemberRow = typeof workspaceMembers.$inferSelect;
 export type DocumentPresenceRow = typeof documentPresence.$inferSelect;
 export type SessionRow = typeof sessions.$inferSelect;
+export type AuditLogRow = typeof auditLog.$inferSelect;
