@@ -1,0 +1,42 @@
+name: Feature request
+description: Propose a new feature or enhancement
+labels: []
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: What's missing or broken today, and why it matters. One or two sentences of context.
+      placeholder: e.g. "No way to clone an existing document as a starting point for a new one."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: A checklist of concrete, verifiable outcomes. Each item should be checkable — "done" or "not done", not "improved".
+      placeholder: |
+        - [ ] New `duplicateDoc(id)` server action requires at least viewer access to the source
+        - [ ] Dashboard gets a 'Duplicate' action per document row
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation-notes
+    attributes:
+      label: Implementation Notes
+      description: Pointers for whoever builds this — existing code to model after, files to read first, sequencing hints. Optional but encouraged.
+      placeholder: e.g. "Model after `createDocumentWithContent` in `documentService.ts` for the creation half."
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Other issues or milestones this needs first, or "none".
+      placeholder: "none"
+    validations:
+      required: true
