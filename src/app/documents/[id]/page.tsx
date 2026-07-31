@@ -6,7 +6,7 @@ import { zUuid } from '@/lib/validation';
 import { getDocumentForUser } from '@/server/services/documentService';
 import { NotFoundError } from '@/server/services/access-control';
 import { DocumentHeader } from '@/components/document/DocumentHeader';
-import { Editor } from '@/components/editor/Editor';
+import { EditorLoader as Editor } from '@/components/editor/EditorLoader';
 
 export default async function DocumentPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
