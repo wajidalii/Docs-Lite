@@ -1,0 +1,44 @@
+name: Bug report
+description: Report something that's broken
+labels: []
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: What happened / Expected behavior
+      description: What you observed, and what should have happened instead. Include steps to reproduce if not obvious.
+      placeholder: |
+        What happened: Sharing a document with an already-shared user creates a duplicate row instead of updating the role.
+        Expected: Re-sharing should upsert (update the existing grant), not duplicate it.
+        Steps: share a doc as viewer, then share it again with the same email as editor.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Definition of Done
+      description: A checklist of concrete, verifiable outcomes that mean this bug is actually fixed — not just "the immediate symptom went away".
+      placeholder: |
+        - [ ] Re-sharing with an existing collaborator updates their role instead of duplicating the grant
+        - [ ] Regression test added covering this case
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation-notes
+    attributes:
+      label: Implementation Notes
+      description: Where the bug likely lives, relevant files, anything you already ruled out. Optional but encouraged.
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Other issues this is related to or blocked by, or "none".
+      placeholder: "none"
+    validations:
+      required: true
