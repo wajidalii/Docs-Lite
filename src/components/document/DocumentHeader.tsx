@@ -7,6 +7,7 @@ import { ChevronLeft, Trash2 } from 'lucide-react';
 import { renameDoc, deleteDoc } from '@/app/actions/documents';
 import { ShareDialog } from './ShareDialog';
 import { VersionHistoryDialog } from './VersionHistoryDialog';
+import { PresenceAvatars } from './PresenceAvatars';
 import { showToast } from '@/lib/toast';
 import type { EffectiveRole } from '@/lib/access';
 
@@ -75,6 +76,8 @@ export function DocumentHeader({
       ) : (
         <span className="dl-title-static">{initialTitle}</span>
       )}
+
+      <PresenceAvatars docId={docId} />
 
       <span className="dl-pill" data-role={role}>
         {roleLabel[role]}

@@ -64,6 +64,13 @@
       "when": 1785449319140,
       "tag": "0008_slimy_moonstone",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1785456630091,
+      "tag": "0009_wild_firedrake",
+      "breakpoints": true
     }
   ]
 }
