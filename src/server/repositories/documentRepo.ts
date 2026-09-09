@@ -1,6 +1,7 @@
 import 'server-only';
 import { and, desc, eq, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import { db } from '@/server/db/client';
+import { withDbRetry } from '@/server/db/retry';
 import { documents, documentShares } from '@/server/db/schema';
 import type { Role } from '@/lib/access';
 
@@ -18,10 +19,9 @@ export async function insertDocument(
   content: unknown,
   contentText: string,
 ): Promise<string> {
-  const [row] = await db
-    .insert(documents)
-    .values({ ownerId, workspaceId, title, content, contentText })
-    .returning({ id: documents.id });
+  const [row] = await withDbRetry(() =>
+    db.insert(documents).values({ ownerId, workspaceId, title, content, contentText }).returning({ id: documents.id }),
+  );
   return row.id;
 }
 
@@ -120,7 +120,9 @@ export async function updateTitle(id: string, title: string) {
 }
 
 export async function updateContent(id: string, content: unknown, contentText: string) {
-  await db.update(documents).set({ content, contentText, updatedAt: new Date() }).where(eq(documents.id, id));
+  await withDbRetry(() =>
+    db.update(documents).set({ content, contentText, updatedAt: new Date() }).where(eq(documents.id, id)),
+  );
 }
 
 export async function softDeleteDocument(id: string) {
