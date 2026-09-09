@@ -83,6 +83,11 @@ export async function saveDoc(id: string, content: unknown) {
     if (err instanceof RateLimitError) return { ok: false as const, error: err.message };
     throw err;
   }
+  // Without this, Next.js's route cache keeps serving whatever this page
+  // last rendered — autosaved content (headings, inserted images, anything
+  // not routed through renameDoc/deleteDoc, which already revalidate) would
+  // never appear on a fresh load even though it's correctly persisted.
+  revalidatePath(`/documents/${parsedId.data}`);
   return { ok: true as const, savedAt: new Date().toISOString() };
 }
 
