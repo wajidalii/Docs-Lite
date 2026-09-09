@@ -12,13 +12,18 @@ import { BubbleMenu } from '@tiptap/react/menus';
 import type { Editor } from '@tiptap/react';
 import { autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
 import { ExternalLink, Pencil } from 'lucide-react';
+import { normalizeUrl } from '@/lib/editor/normalizeUrl';
 
 function getHref(editor: Editor): string {
   return (editor.getAttributes('link').href as string | undefined) ?? '';
 }
 
 function openInNewTab(href: string) {
-  if (href) window.open(href, '_blank', 'noopener,noreferrer');
+  // Defensive normalize, not just belt-and-suspenders: this also fixes
+  // links that were already saved without a scheme before setLink calls
+  // started normalizing, without requiring the user to re-edit each one.
+  const normalized = normalizeUrl(href);
+  if (normalized) window.open(normalized, '_blank', 'noopener,noreferrer');
 }
 
 // Click-driven menu: Tiptap's BubbleMenu shows based on selection state,
@@ -47,10 +52,10 @@ function LinkClickMenu({ editor, editable }: { editor: Editor; editable: boolean
   }, [editing]);
 
   const confirmEdit = () => {
-    const trimmed = draft.trim();
+    const normalized = normalizeUrl(draft);
     const chain = editor.chain().focus().extendMarkRange('link');
-    if (trimmed === '') chain.unsetLink().run();
-    else chain.setLink({ href: trimmed }).run();
+    if (normalized === '') chain.unsetLink().run();
+    else chain.setLink({ href: normalized }).run();
     setEditing(false);
   };
 
