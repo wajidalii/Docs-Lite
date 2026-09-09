@@ -6,6 +6,7 @@ import { Eye } from 'lucide-react';
 import { editorExtensions } from '@/lib/editor/extensions';
 import { saveDoc } from '@/app/actions/documents';
 import { Toolbar, type SaveStatus } from './Toolbar';
+import { LinkMenu } from './LinkMenu';
 
 export function Editor({
   docId,
@@ -84,6 +85,7 @@ export function Editor({
           </span>
         </div>
       )}
+      <LinkMenu editor={editor} editable={editable} />
       <div className="dl-canvas">
         <div className="dl-sheet">
           <EditorContent editor={editor} />
