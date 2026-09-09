@@ -87,7 +87,17 @@ export async function saveDoc(id: string, content: unknown) {
   // last rendered — autosaved content (headings, inserted images, anything
   // not routed through renameDoc/deleteDoc, which already revalidate) would
   // never appear on a fresh load even though it's correctly persisted.
-  revalidatePath(`/documents/${parsedId.data}`);
+  // Best-effort: saveDoc fires on every autosave (~every 750ms while
+  // typing), which can trip Vercel's on-demand revalidation rate limit —
+  // that must never mask an otherwise-successful content write by failing
+  // the whole action, so a revalidation error is logged and swallowed here
+  // rather than rethrown (same "must not break the primary action" posture
+  // as auditService.recordAuditEvent).
+  try {
+    revalidatePath(`/documents/${parsedId.data}`);
+  } catch (err) {
+    console.error('[saveDoc] revalidatePath failed (content was still saved):', err);
+  }
   return { ok: true as const, savedAt: new Date().toISOString() };
 }
 
