@@ -1,6 +1,7 @@
 import 'server-only';
 import { eq } from 'drizzle-orm';
 import { db } from '@/server/db/client';
+import { withDbRetry } from '@/server/db/retry';
 import { documentImages } from '@/server/db/schema';
 
 // Pure data access. Repositories never make authorization decisions — the
@@ -12,10 +13,9 @@ export async function insertImage(
   size: number,
   data: Buffer,
 ): Promise<string> {
-  const [row] = await db
-    .insert(documentImages)
-    .values({ documentId, mimeType, size, data })
-    .returning({ id: documentImages.id });
+  const [row] = await withDbRetry(() =>
+    db.insert(documentImages).values({ documentId, mimeType, size, data }).returning({ id: documentImages.id }),
+  );
   return row.id;
 }
 
