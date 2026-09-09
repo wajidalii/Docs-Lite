@@ -29,6 +29,7 @@ export const extensions = [
   Link.configure({
     openOnClick: false,
     autolink: true,
+    defaultProtocol: 'https',
     HTMLAttributes: { rel: 'noopener noreferrer nofollow', target: '_blank' },
   }),
   TableKit.configure({

@@ -20,6 +20,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { showToast } from '@/lib/toast';
+import { normalizeUrl } from '@/lib/editor/normalizeUrl';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -106,11 +107,12 @@ export function Toolbar({ editor, status, docId }: { editor: Editor; status: Sav
     const previousUrl = (editor.getAttributes('link').href as string | undefined) ?? '';
     const url = window.prompt('Link URL', previousUrl);
     if (url === null) return;
-    if (url.trim() === '') {
+    const normalized = normalizeUrl(url);
+    if (normalized === '') {
       c().extendMarkRange('link').unsetLink().run();
       return;
     }
-    c().extendMarkRange('link').setLink({ href: url.trim() }).run();
+    c().extendMarkRange('link').setLink({ href: normalized }).run();
   };
 
   const onImageChosen = async (e: ChangeEvent<HTMLInputElement>) => {
