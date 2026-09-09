@@ -52,7 +52,17 @@ export function Editor({
     content: initialContent,
     editable,
     immediatelyRender: false,
-    onUpdate: ({ editor }) => schedule(editor.getJSON()),
+    // The plain JSON round-trip is deliberate, not a no-op: passing
+    // editor.getJSON()'s result straight into the Server Action call lets
+    // Next.js's Flight client treat some node's `attrs` (e.g. a heading's
+    // `{level: 1}`) as a "temporary client reference" instead of inline
+    // data — the server then can't read `attrs` at all (throws "cannot dot
+    // into a temporary client reference"), and worse, `attrs` silently
+    // serializes to nothing when written to the DB, dropping heading
+    // levels/image src+alt entirely. Cloning through JSON here, while still
+    // on the client, produces a genuinely plain object with no such
+    // boundary-crossing baggage.
+    onUpdate: ({ editor }) => schedule(JSON.parse(JSON.stringify(editor.getJSON()))),
     onBlur: () => {
       if (timer.current) clearTimeout(timer.current);
       void flush();
